@@ -12,34 +12,76 @@ library(vegan)
 library(adespatial)
 library(spdep)
 
-MEM.moransel <- function (y, neigh, MEM, nperm = 999, style = "B", alpha = 0.05) {
+# Function for the selection of a subset of MEM variables based on the minimization of the
+# Moran's I of the response residuals (no environmental dataset considered here).
+# The function is based on the Moran's I index and on a Mantel correlogram for uni- and
+# multivariate response data, respectively.
+
+MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
+                          response.transform = "hellinger") {
   SPATIAL = "FALSE"
+  neigh <- dnearneigh(x = as.matrix(coord), d1 = 0, d2 = give.thresh(dist(coord)))
   listw <- nb2listw(neigh, style = style)
-  I <- moran.mc(y, listw, nperm)
-  if (I$p.value <= alpha) {
-    SPATIAL <- "TRUE"
-    MEM.sel <- data.frame(row.names = row.names(MEM))
-  }
   
-  nbloop <- c()
-  while (I$p.value <= alpha) {
-    nbloop <- c(nbloop, 1)                   # Loop counter
-    I.vector <- vector("numeric", ncol(MEM)) # For the I computed with each MEM variable
-    for (i in 1:ncol(MEM)) {
-      mod <- lm(y ~ MEM[, i])
-      I.vector[i] <- moran(residuals(mod), listw, length(neigh), Szero(listw))$I
-    }
-    min.moran <- which.min(I.vector)
-    # Selection of the MEM variable(s) best minimizing the Moran's I value of the residuals:
-    MEM.sel[, sum(nbloop)] <- MEM[, min.moran]
-    colnames(MEM.sel)[sum(nbloop)] <- colnames(MEM)[min.moran]
-    y <- residuals(lm(y ~ MEM.sel[, sum(nbloop)]))
+  if (is.vector(y) == "TRUE") {  # The response is univariate --> Moran's I test (permutation)
     I <- moran.mc(y, listw, nperm)
+    if (I$p.value <= alpha) {
+      SPATIAL <- "TRUE"
+      MEM.sel <- data.frame(row.names = row.names(MEM))
+    }
+  
+    nbloop <- c()
+    while (I$p.value <= alpha) {
+      nbloop <- c(nbloop, 1)                   # Loop counter
+      I.vector <- vector("numeric", ncol(MEM)) # For the I computed with each MEM variable
+      for (i in 1:ncol(MEM)) {
+        mod <- lm(y ~ MEM[, i])
+        I.vector[i] <- moran(residuals(mod), listw, length(neigh), Szero(listw))$I
+      }
+      min.moran <- which.min(I.vector)
+      # Selection of the MEM variable(s) best minimizing the Moran's I value of the residuals:
+      MEM.sel[, sum(nbloop)] <- MEM[, min.moran]
+      colnames(MEM.sel)[sum(nbloop)] <- colnames(MEM)[min.moran]
+      y <- residuals(lm(y ~ MEM.sel[, sum(nbloop)]))
+      I <- moran.mc(y, listw, nperm)
+    }
+  } else {   # The response is multivariate --> Mantel correlogram
+    y <- decostand(y, method = response.transform)
+    y.D1 <- dist(y)
+    M <- mantel.correlog(y.D1, XY = coord, nperm = nperm)
+    sub <- as.numeric(which(M$mantel.res[, 3] > 0))   # Only positive spatial correlation
+    signif <- length(which(M$mantel.res[sub, 5] <= alpha))
+    if (signif > 0) {
+      SPATIAL <- "TRUE"
+      MEM.sel <- data.frame(row.names = row.names(MEM))
+    }
+    
+    nbloop <- c()
+    while (signif > 0) {
+      nbloop <- c(nbloop, 1)                   # Loop counter
+      M.vector <- vector("numeric", ncol(MEM))
+      for (i in 1:ncol(MEM)) {
+        mod <- rda(y, MEM[, i])
+        ymod.D1 <- dist(residuals(mod))
+        M <- mantel.correlog(ymod.D1, XY = coord, nperm = 1)
+        M.vector[i] <- sum(M$mantel.res[as.numeric(which(M$mantel.res[, 3] > 0)), 3])
+      }
+      min.mantel <- which.min(M.vector)
+      # Selection of the MEM variable(s) best minimizing the Moran's I value of the residuals:
+      MEM.sel[, sum(nbloop)] <- MEM[, min.mantel]
+      colnames(MEM.sel)[sum(nbloop)] <- colnames(MEM)[min.mantel]
+      y <- residuals(rda(y, MEM.sel[, sum(nbloop)]))
+      
+      y.D1 <- dist(y)
+      M <- mantel.correlog(y.D1, XY = coord, nperm = nperm)
+      sub <- as.numeric(which(M$mantel.res[, 3] > 0))   # Only positive spatial correlation
+      signif <- length(which(M$mantel.res[sub, 5] <= alpha))      
+    }
   }
   
   if (SPATIAL == "FALSE") return("No significant spatial structure")
   else return(MEM.sel)
-  # Written by David Bauman
+  # By David Bauman
 }
 
 # Construction of a result matrix:
@@ -160,9 +202,30 @@ for(i in 1:nperm){
   }
   
   Y.thresh.res <- test.W(list, Y = Y, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
-
-  nb <- dnearneigh(x = as.matrix(C), d1 = 0, d2 = give.thresh(dist(C)))  
   
-  moransel <- MEM.moransel(Y, nb, Y.thresh.res$best$MEM)
+  moransel <- MEM.moransel(Y, C, Y.thresh.res$best$MEM)
 
+  if (class(moransel) == "data.frame") {
+    results[1, i+5] <- 0
+    results[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+  } else {
+    results[1, i+5] <- 1
+    results[1, i+1005] <- NA
+  }
+}
+  
+# Type I error, median and sd of R2adj:
+#######################################
+  
+results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
+results[1, 4] <- median(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
+results[1, 5] <- sd(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
+
+# Output of the results:
+# **********************
+
+res_file_name <- paste("Results", framework, ran, paste(design,".MoranRes", ".txt", sep = ""), sep = "_")
+write.table(results, file = res_file_name, sep = "\t")
+  
+  
   
