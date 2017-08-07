@@ -405,10 +405,10 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsB_I[1, i+5] <- 0
-    resultsB_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsB_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsB_I[2, 1005+i]
   } else {
     resultsB_I[1, i+5] <- 0
-    resultsB_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsB_I[1, i+1005] <- NA
   }
 }
 
@@ -418,11 +418,14 @@ for(i in 1:nperm){
 resultsB_I[1, 3] <- length(which(resultsB_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
 resultsB_I[1, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
 resultsB_I[1, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
+resultsB_I[2, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
+resultsB_I[2, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
+resultsB_I[3, 3] <- length(which(resultsB_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Broad_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Broad_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsB_I, file = res_file_name, sep = "\t")
 
@@ -448,10 +451,10 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsM_I[1, i+5] <- 0
-    resultsM_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsM_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsM_I[2, 1005+i]
   } else {
     resultsM_I[1, i+5] <- 0
-    resultsM_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsM_I[1, i+1005] <- NA
   }
 }
 
@@ -461,11 +464,14 @@ for(i in 1:nperm){
 resultsM_I[1, 3] <- length(which(resultsM_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
 resultsM_I[1, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
 resultsM_I[1, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
+resultsM_I[2, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
+resultsM_I[2, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
+resultsM_I[3, 3] <- length(which(resultsM_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Medium_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Medium_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsM_I, file = res_file_name, sep = "\t")
 
@@ -491,10 +497,10 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsF_I[1, i+5] <- 0
-    resultsF_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsF_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsF_I[2, 1005+i]
   } else {
     resultsF_I[1, i+5] <- 0
-    resultsF_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    resultsF_I[1, i+1005] <- NA
   }
 }
 
@@ -504,10 +510,14 @@ for(i in 1:nperm){
 resultsF_I[1, 3] <- length(which(resultsF_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
 resultsF_I[1, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
 resultsF_I[1, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
+resultsF_I[2, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
+resultsF_I[2, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
+resultsF_I[3, 3] <- length(which(resultsF_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Fine_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Fine_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsF_I, file = res_file_name, sep = "\t")
+
