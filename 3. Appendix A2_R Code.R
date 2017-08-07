@@ -699,7 +699,7 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsB_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsB_FWD[1, i+1005] <- resultsB_FWD[2, 1005+i] - RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared
+   resultsB_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsB_FWD[2, 1005+i]
  } } else{ 
           resultsB_FWD[1, i+5] <- 1   # p-val made equal to 1 
           resultsB_FWD[1, i+1005] <- NA
@@ -713,11 +713,14 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    resultsB_FWD[1, 3] <- length(which(resultsB_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsB_FWD[1, 4] <- median(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
    resultsB_FWD[1, 5] <- sd(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
+   resultsB_FWD[2, 4] <- median(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
+   resultsB_FWD[2, 5] <- sd(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
+   resultsB_FWD[3, 3] <- length(which(resultsB_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Broad_FWD", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Broad_FWD", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsB_FWD, file = res_file_name, sep = "\t")
 
@@ -746,7 +749,7 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsM_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsM_FWD[1, i+1005] <- resultsM_FWD[2, 1005+i] - RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared
+   resultsM_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsM_FWD[2, 1005+i]
  } } else{ 
           resultsM_FWD[1, i+5] <- 1   # p-val made equal to 1 
           resultsM_FWD[1, i+1005] <- NA
@@ -760,11 +763,14 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    resultsM_FWD[1, 3] <- length(which(resultsM_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsM_FWD[1, 4] <- median(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
    resultsM_FWD[1, 5] <- sd(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
+   resultsM_FWD[2, 4] <- median(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
+   resultsM_FWD[2, 5] <- sd(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
+   resultsM_FWD[3, 3] <- length(which(resultsM_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Medium_FWD", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Medium_FWD", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsM_FWD, file = res_file_name, sep = "\t")
 
@@ -793,7 +799,7 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsF_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsF_FWD[1, i+1005] <- NA - RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared
+   resultsF_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsF_FWD[2, 1005+i]
  } } else{ 
           resultsF_FWD[1, i+5] <- 1   # p-val made equal to 1 
           resultsF_FWD[1, i+1005] <- NA
@@ -807,11 +813,14 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    resultsF_FWD[1, 3] <- length(which(resultsF_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsF_FWD[1, 4] <- median(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
    resultsF_FWD[1, 5] <- sd(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
+   resultsF_FWD[2, 4] <- median(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
+   resultsF_FWD[2, 5] <- sd(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
+   resultsF_FWD[3, 3] <- length(which(resultsF_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Fine_FWD", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Fine_FWD", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsF_FWD, file = res_file_name, sep = "\t")
 
@@ -840,7 +849,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsB_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsB_AIC[1, i+1005] <- resultsB_AIC[2, i+1005] - RsquareAdj(rda(Y, MEM.select))$adj.r.squared
+   resultsB_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsB_AIC[2, i+1005]
 
 }
 
@@ -850,11 +859,14 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
    resultsB_AIC[1, 3] <- length(which(resultsB_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
    resultsB_AIC[3, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
+   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
+   resultsB_AIC[2, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
+   resultsB_AIC[3, 3] <- length(which(resultsB_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Broad_AIC", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Broad_AIC", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsB_AIC, file = res_file_name, sep = "\t")
 
@@ -878,7 +890,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsM_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsM_AIC[1, i+1005] <- resultsM_AIC[2, i+1005] - RsquareAdj(rda(Y, MEM.select))$adj.r.squared
+   resultsM_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsM_AIC[2, i+1005]
 
 }
 
@@ -888,11 +900,14 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
    resultsM_AIC[1, 3] <- length(which(resultsM_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsM_AIC[1, 4] <- median(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
    resultsM_AIC[1, 5] <- sd(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
+   resultsM_AIC[2, 4] <- median(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
+   resultsM_AIC[2, 5] <- sd(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
+   resultsM_AIC[3, 3] <- length(which(resultsM_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Medium_AIC", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Medium_AIC", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsM_AIC, file = res_file_name, sep = "\t")
 
@@ -916,7 +931,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsF_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsF_AIC[1, i+1005] <- resultsF_AIC[2, i+1005] - RsquareAdj(rda(Y, MEM.select))$adj.r.squared
+   resultsF_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsF_AIC[2, i+1005]
 
 }
 
@@ -926,10 +941,13 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
    resultsF_AIC[1, 3] <- length(which(resultsF_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
    resultsF_AIC[1, 4] <- median(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
    resultsF_AIC[1, 5] <- sd(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
-
+   resultsF_AIC[2, 4] <- median(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
+   resultsF_AIC[2, 5] <- sd(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
+   resultsF_AIC[3, 3] <- length(which(resultsF_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+   
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Power", strength, "Fine_AIC", paste(design, ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Power", "Fine_AIC", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsF_AIC, file = res_file_name, sep = "\t")

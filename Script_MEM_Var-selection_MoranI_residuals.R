@@ -437,7 +437,7 @@ if(design == "regular") x <- MEM[, 25:27] else x <- MEM[, 19:21]
 
 for(i in 1:nperm){
   
-  Y <- spesimB[[i]]
+  Y <- spesimM[[i]]
   lm <- lm(Y ~ ., data = x)
   R2adj <- summary(lm)$adj.r.squared
   resultsM_I[2, 1005+i] <- R2adj
@@ -483,7 +483,7 @@ if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 38:40]
 
 for(i in 1:nperm){
   
-  Y <- spesimB[[i]]
+  Y <- spesimF[[i]]
   lm <- lm(Y ~ ., data = x)
   R2adj <- summary(lm)$adj.r.squared
   resultsF_I[2, 1005+i] <- R2adj
