@@ -92,10 +92,10 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
 # 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
 # contain R2adj.
 
-results <- as.data.frame(matrix(nrow = 1, ncol = 2005))
+results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
-                       paste("p-val", c(1:1000), sep = ""), paste("R2_", c(1:1000), sep = ""))
+                       paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
 results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
 # minimun spanning tree are not connected.
@@ -119,7 +119,7 @@ framework <- "univariate"    # "univariate" or "multivariate"
 
 design <- "regular"   # or "irregular"
 
-nperm <- 1000
+nperm <- 10000
 
 # Generation of the 117 quadrats:
 #################################
@@ -207,10 +207,10 @@ for(i in 1:nperm){
 
   if (class(moransel) == "data.frame") {
     results[1, i+5] <- 0
-    results[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    results[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
   } else {
     results[1, i+5] <- 1
-    results[1, i+1005] <- NA
+    results[1, i+10005] <- NA
   }
 }
   
@@ -218,8 +218,8 @@ for(i in 1:nperm){
 #######################################
   
 results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-results[1, 4] <- median(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
-results[1, 5] <- sd(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
+results[1, 4] <- median(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
+results[1, 5] <- sd(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
 
 # Output of the results:
 # **********************
@@ -228,7 +228,9 @@ res_file_name <- paste("Results", framework, ran, paste(design,".MoranRes", ".tx
 write.table(results, file = res_file_name, sep = "\t")
   
 ##############################################################################################
-  
+##############################################################################################
+##############################################################################################
+
 # II. Power and accuracy:
 # ***********************
 
@@ -249,23 +251,23 @@ lmp <- function (modelobject) {
 # ******************************************************************************
 # B, M, F stand for Broad, Medium and Fine; AIC et FWD stand for AIC-based selection and forward selection
 
-resultsB_I <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsB_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsB_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-                            paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsB_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsB_I[,2] <- c("1-(D/4t)^2", NA, NA)
+                            paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsB_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsB_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsM_I <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsM_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsM_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-                            paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsM_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsM_I[,2] <- c("1-(D/4t)^2", NA, NA)
+                            paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsM_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsM_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsF_I <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsF_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsF_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-                            paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsF_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsF_I[,2] <- c("1-(D/4t)^2", NA, NA)
+                            paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsF_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsF_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
 # Definition of the simulation parameters:
 ##########################################
@@ -284,7 +286,7 @@ framework <- "univariate"    # "univariate" or "multivariate"
 
 design <- "regular"   # or "irregular"
 
-nperm <- 1000
+nperm <- 10000
 
 # Generation of the 117 quadrats:
 #################################
@@ -369,7 +371,7 @@ if(design == "regular"){
     set.seed(i)
     spesimB[[i]] <- (MEM[, 1] * 0.5) + (MEM[, 2] * 0.5) + (MEM[, 3] * 0.5) + rnorm(n, mean = 0, sd = 1)
     spesimM[[i]] <- (MEM[, 19] * 0.6) + (MEM[, 20] * 1) + (MEM[, 21] * 0.8) + rnorm(n, mean = 0, sd = 1)
-    spesimF[[i]] <- (MEM[, 38] * 0.5) + (MEM[, 39] * 1) + (MEM[, 40] * 1) + rnorm(n, mean = 0, sd = 1)
+    spesimF[[i]] <- (MEM[, 37] * 0.5) + (MEM[, 38] * 1) + (MEM[, 39] * 1) + rnorm(n, mean = 0, sd = 1)
   }
 }
 
@@ -394,7 +396,7 @@ for(i in 1:nperm){
   Y <- spesimB[[i]]
   lm <- lm(Y ~ ., data = x)
   R2adj <- summary(lm)$adj.r.squared
-  resultsB_I[2, 1005+i] <- R2adj
+  resultsB_I[2, 10005+i] <- R2adj
   resultsB_I[3, 5+i] <- lmp(lm)
   
   Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -405,10 +407,11 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsB_I[1, i+5] <- 0
-    resultsB_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsB_I[2, 1005+i]
+    resultsB_I[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsB_I[2, 10005+i]
+    resultsB_I[4, i+5] <- ncol(moransel)
   } else {
-    resultsB_I[1, i+5] <- 0
-    resultsB_I[1, i+1005] <- NA
+    resultsB_I[1, i+5] <- 1
+    resultsB_I[1, i+10005] <- NA
   }
 }
 
@@ -416,11 +419,13 @@ for(i in 1:nperm){
 #####################################
 
 resultsB_I[1, 3] <- length(which(resultsB_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-resultsB_I[1, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
-resultsB_I[1, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
-resultsB_I[2, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
-resultsB_I[2, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(1006:(nperm + 1005))])))
+resultsB_I[1, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(10006:(nperm + 10005))])))
+resultsB_I[1, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(10006:(nperm + 10005))])))
+resultsB_I[2, 4] <- median(na.omit(as.numeric(resultsB_I[2, c(10006:(nperm + 10005))])))
+resultsB_I[2, 5] <- sd(na.omit(as.numeric(resultsB_I[2, c(10006:(nperm + 10005))])))
 resultsB_I[3, 3] <- length(which(resultsB_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsB_I[4, 4] <- median(na.omit(as.numeric(resultsB_I[4, c(6:(nperm + 5))])))
+resultsB_I[4, 5] <- sd(na.omit(as.numeric(resultsB_I[4, c(6:(nperm + 5))])))
 
 # Output of the results:
 # **********************
@@ -440,7 +445,7 @@ for(i in 1:nperm){
   Y <- spesimM[[i]]
   lm <- lm(Y ~ ., data = x)
   R2adj <- summary(lm)$adj.r.squared
-  resultsM_I[2, 1005+i] <- R2adj
+  resultsM_I[2, 10005+i] <- R2adj
   resultsM_I[3, 5+i] <- lmp(lm)
   
   Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -451,10 +456,11 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsM_I[1, i+5] <- 0
-    resultsM_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsM_I[2, 1005+i]
+    resultsM_I[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsM_I[2, 10005+i]
+    resultsM_I[4, i+5] <- ncol(moransel)
   } else {
-    resultsM_I[1, i+5] <- 0
-    resultsM_I[1, i+1005] <- NA
+    resultsM_I[1, i+5] <- 1
+    resultsM_I[1, i+10005] <- NA
   }
 }
 
@@ -462,11 +468,13 @@ for(i in 1:nperm){
 #####################################
 
 resultsM_I[1, 3] <- length(which(resultsM_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-resultsM_I[1, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
-resultsM_I[1, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
-resultsM_I[2, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
-resultsM_I[2, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(1006:(nperm + 1005))])))
+resultsM_I[1, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(10006:(nperm + 10005))])))
+resultsM_I[1, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(10006:(nperm + 10005))])))
+resultsM_I[2, 4] <- median(na.omit(as.numeric(resultsM_I[2, c(10006:(nperm + 10005))])))
+resultsM_I[2, 5] <- sd(na.omit(as.numeric(resultsM_I[2, c(10006:(nperm + 10005))])))
 resultsM_I[3, 3] <- length(which(resultsM_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsM_I[4, 4] <- median(na.omit(as.numeric(resultsM_I[4, c(6:(nperm + 5))])))
+resultsM_I[4, 5] <- sd(na.omit(as.numeric(resultsM_I[4, c(6:(nperm + 5))])))
 
 # Output of the results:
 # **********************
@@ -479,14 +487,14 @@ write.table(resultsM_I, file = res_file_name, sep = "\t")
 #############
 #############
 
-if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 38:40]
+if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 37:39]
 
 for(i in 1:nperm){
   
   Y <- spesimF[[i]]
   lm <- lm(Y ~ ., data = x)
   R2adj <- summary(lm)$adj.r.squared
-  resultsF_I[2, 1005+i] <- R2adj
+  resultsF_I[2, 10005+i] <- R2adj
   resultsF_I[3, 5+i] <- lmp(lm)
   
   Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -497,10 +505,11 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     resultsF_I[1, i+5] <- 0
-    resultsF_I[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsF_I[2, 1005+i]
+    resultsF_I[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared - resultsF_I[2, 10005+i]
+    resultsF_I[4, i+5] <- ncol(moransel)
   } else {
-    resultsF_I[1, i+5] <- 0
-    resultsF_I[1, i+1005] <- NA
+    resultsF_I[1, i+5] <- 1
+    resultsF_I[1, i+10005] <- NA
   }
 }
 
@@ -508,11 +517,13 @@ for(i in 1:nperm){
 #####################################
 
 resultsF_I[1, 3] <- length(which(resultsF_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-resultsF_I[1, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
-resultsF_I[1, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
-resultsF_I[2, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
-resultsF_I[2, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(1006:(nperm + 1005))])))
+resultsF_I[1, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(10006:(nperm + 10005))])))
+resultsF_I[1, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(10006:(nperm + 10005))])))
+resultsF_I[2, 4] <- median(na.omit(as.numeric(resultsF_I[2, c(10006:(nperm + 10005))])))
+resultsF_I[2, 5] <- sd(na.omit(as.numeric(resultsF_I[2, c(10006:(nperm + 10005))])))
 resultsF_I[3, 3] <- length(which(resultsF_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsF_I[4, 4] <- median(na.omit(as.numeric(resultsF_I[4, c(6:(nperm + 5))])))
+resultsF_I[4, 5] <- sd(na.omit(as.numeric(resultsF_I[4, c(6:(nperm + 5))])))
 
 # Output of the results:
 # **********************

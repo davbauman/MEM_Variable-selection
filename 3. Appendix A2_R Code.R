@@ -30,10 +30,10 @@ library(spdep)
 # 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
 # contain R2adj.
 
-results <- as.data.frame(matrix(nrow = 1, ncol = 2005))
+results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
-   paste("p-val", c(1:1000), sep = ""), paste("R2_", c(1:1000), sep = ""))
+   paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
 results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
 # minimun spanning tree are not connected.
@@ -57,7 +57,7 @@ framework <- "univariate"    # "univariate" or "multivariate"
 
 design <- "regular"   # or "irregular"
 
-nperm <- 1000
+nperm <- 10000
 
 # Generation of the 117 quadrats:
 #################################
@@ -154,7 +154,7 @@ Y.thresh.res <- test.W(list, Y = Y, xy = C, MEM.autocor = MEM_model, f = funPCNM
 MEMid <- Y.thresh.res$best$AIC$ord[1:which.min(Y.thresh.res$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.thresh.res$best$MEM[, sort(c(MEMid))])
   results[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   results[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared
+   results[1, i+10005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared
 
 }
 
@@ -162,8 +162,8 @@ MEMid <- Y.thresh.res$best$AIC$ord[1:which.min(Y.thresh.res$best$AIC$AICc)]
 #######################################
 
    results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   results[1, 4] <- median(as.numeric(results[1, c(1006:(nperm + 1005))]))
-   results[1, 5] <- sd(as.numeric(results[1, c(1006:(nperm + 1005))]))
+   results[1, 4] <- median(as.numeric(results[1, c(10006:(nperm + 10005))]))
+   results[1, 5] <- sd(as.numeric(results[1, c(10006:(nperm + 10005))]))
 
 
 # Output of the results:
@@ -189,10 +189,10 @@ write.table(results, file = res_file_name, sep = "\t")
 # 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
 # contain R2adj.
 
-results <- as.data.frame(matrix(nrow = 1, ncol = 2005))
+results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
-   paste("p-val", c(1:1000), sep = ""), paste("R2_", c(1:1000), sep = ""))
+   paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
 results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
 # minimun spanning tree are not connected.
@@ -242,10 +242,10 @@ R2adj <- RsquareAdj(rda(Y, Y.thresh.res$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.thresh.res$best$MEM)[, c(sign)]
    results[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   results[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared
+   results[1, i+10005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared
  } } else{ 
           results[1, i+5] <- 1   # p-val made equal to 1 
-          results[1, i+1005] <- NA
+          results[1, i+10005] <- NA
      }
 
 }
@@ -255,8 +255,8 @@ R2adj <- RsquareAdj(rda(Y, Y.thresh.res$best$MEM))$adj.r.squared
 #######################################
 
    results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   results[1, 4] <- median(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
-   results[1, 5] <- sd(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
+   results[1, 4] <- median(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
+   results[1, 5] <- sd(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
 
 # Output of the results:
 # **********************
@@ -276,7 +276,8 @@ write.table(results, file = res_file_name, sep = "\t")
 # multivariate response data, respectively.
 
 MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
-                          response.transform = "hellinger") {
+                          response.transform = "hellinger") 
+{
   SPATIAL = "FALSE"
   neigh <- dnearneigh(x = as.matrix(coord), d1 = 0, d2 = give.thresh(dist(coord)))
   listw <- nb2listw(neigh, style = style)
@@ -347,13 +348,13 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
 
 # One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Material and methods).
 # For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of the R2adj;
-# 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
+# 10000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
 # contain R2adj.
 
-results <- as.data.frame(matrix(nrow = 1, ncol = 2005))
+results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
-                       paste("p-val", c(1:1000), sep = ""), paste("R2_", c(1:1000), sep = ""))
+                       paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
 results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
 # minimun spanning tree are not connected.
@@ -377,7 +378,7 @@ framework <- "univariate"    # "univariate" or "multivariate"
 
 design <- "regular"   # or "irregular"
 
-nperm <- 1000
+nperm <- 10000
 
 # Generation of the 117 quadrats:
 #################################
@@ -467,10 +468,10 @@ for(i in 1:nperm){
   
   if (class(moransel) == "data.frame") {
     results[1, i+5] <- 0
-    results[1, i+1005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
+    results[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
   } else {
     results[1, i+5] <- 1
-    results[1, i+1005] <- NA
+    results[1, i+10005] <- NA
   }
 }
 
@@ -478,8 +479,8 @@ for(i in 1:nperm){
 #######################################
   
 results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-results[1, 4] <- median(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
-results[1, 5] <- sd(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
+results[1, 4] <- median(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
+results[1, 5] <- sd(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
 
 # Output of the results:
 # **********************
@@ -519,41 +520,41 @@ lmp <- function (modelobject) {
 # ******************************************************************************
 # B, M, F stand for Broad, Medium and Fine; AIC et FWD stand for AIC-based selection and forward selection
 
-resultsB_AIC <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsB_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsB_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsB_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsB_AIC[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsB_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsB_AIC[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsB_FWD <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsB_FWD <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsB_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsB_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsB_FWD[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsB_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsB_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsM_AIC <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsM_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsM_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsM_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsM_AIC[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsM_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsM_AIC[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsM_FWD <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsM_FWD <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsM_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsM_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsM_FWD[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsM_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsM_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsF_AIC <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsF_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsF_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsF_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsF_AIC[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsF_AIC[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsF_AIC[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
-resultsF_FWD <- as.data.frame(matrix(nrow = 3, ncol = 2005))
+resultsF_FWD <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsF_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
-   paste("p-val", c(1:1000), sep = ""), paste("deltaR2_", c(1:1000), sep = ""))
-resultsF_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal")
-resultsF_FWD[,2] <- c("1-(D/4t)^2", NA, NA)
+   paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsF_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsF_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
 
 # Definition of the simulation parameters:
@@ -573,7 +574,7 @@ framework <- "univariate"    # "univariate" or "multivariate"
 
 design <- "regular"   # or "irregular"
 
-nperm <- 1000
+nperm <- 10000
 
 # Generation of the 117 quadrats:
 #################################
@@ -649,16 +650,16 @@ n <- nrow(C)
 if(design == "regular"){
       for(i in 1:nperm){
          set.seed(i)
-         spesimB[[i]] <- (MEM[, 1] * 0.5) + (MEM[, 2] * 0.5) + (MEM[, 3] * 0.5) + rnorm(n, mean = 0, sd = 0.1)
-         spesimM[[i]] <- (MEM[, 25] * 0.6) + (MEM[, 26] * 1) + (MEM[, 27] * 0.8) + rnorm(n, mean = 0, sd = 0.1)
-         spesimF[[i]] <- (MEM[, 56] * 0.5) + (MEM[, 57] * 1) + (MEM[, 58] * 1) + rnorm(n, mean = 0, sd = 0.1)
+         spesimB[[i]] <- (MEM[, 1] * 0.5) + (MEM[, 2] * 0.5) + (MEM[, 3] * 0.5) + rnorm(n, mean = 0, sd = 1)
+         spesimM[[i]] <- (MEM[, 25] * 0.6) + (MEM[, 26] * 1) + (MEM[, 27] * 0.8) + rnorm(n, mean = 0, sd = 1)
+         spesimF[[i]] <- (MEM[, 56] * 0.5) + (MEM[, 57] * 1) + (MEM[, 58] * 1) + rnorm(n, mean = 0, sd = 1)
       }  
 } else {                  # Irregular design
       for(i in 1:nperm){
          set.seed(i)
-         spesimB[[i]] <- (MEM[, 1] * 0.5) + (MEM[, 2] * 0.5) + (MEM[, 3] * 0.5) + rnorm(n, mean = 0, sd = 0.1)
-         spesimM[[i]] <- (MEM[, 19] * 0.6) + (MEM[, 20] * 1) + (MEM[, 21] * 0.8) + rnorm(n, mean = 0, sd = 0.1)
-         spesimF[[i]] <- (MEM[, 38] * 0.5) + (MEM[, 39] * 1) + (MEM[, 40] * 1) + rnorm(n, mean = 0, sd = 0.1)
+         spesimB[[i]] <- (MEM[, 1] * 0.5) + (MEM[, 2] * 0.5) + (MEM[, 3] * 0.5) + rnorm(n, mean = 0, sd = 1)
+         spesimM[[i]] <- (MEM[, 19] * 0.6) + (MEM[, 20] * 1) + (MEM[, 21] * 0.8) + rnorm(n, mean = 0, sd = 1)
+         spesimF[[i]] <- (MEM[, 37] * 0.5) + (MEM[, 38] * 1) + (MEM[, 39] * 1) + rnorm(n, mean = 0, sd = 1)
       }
 }
 
@@ -684,7 +685,7 @@ for(i in 1:nperm){
    Y <- spesimB[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsB_FWD[2, 1005+i] <- R2adj
+   resultsB_FWD[2, 10005+i] <- R2adj
    resultsB_FWD[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -699,10 +700,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsB_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsB_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsB_FWD[2, 1005+i]
+   resultsB_FWD[1, i+10005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsB_FWD[2, 10005+i]
  } } else{ 
           resultsB_FWD[1, i+5] <- 1   # p-val made equal to 1 
-          resultsB_FWD[1, i+1005] <- NA
+          resultsB_FWD[1, i+10005] <- NA
      }
 
 }
@@ -711,10 +712,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
 #####################################
 
    resultsB_FWD[1, 3] <- length(which(resultsB_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsB_FWD[1, 4] <- median(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
-   resultsB_FWD[1, 5] <- sd(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
-   resultsB_FWD[2, 4] <- median(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
-   resultsB_FWD[2, 5] <- sd(na.omit(as.numeric(resultsB_FWD[1, c(1006:(nperm + 1005))])))
+   resultsB_FWD[1, 4] <- median(na.omit(as.numeric(resultsB_FWD[1, c(10006:(nperm + 10005))])))
+   resultsB_FWD[1, 5] <- sd(na.omit(as.numeric(resultsB_FWD[1, c(10006:(nperm + 10005))])))
+   resultsB_FWD[2, 4] <- median(na.omit(as.numeric(resultsB_FWD[2, c(10006:(nperm + 10005))])))
+   resultsB_FWD[2, 5] <- sd(na.omit(as.numeric(resultsB_FWD[2, c(10006:(nperm + 10005))])))
    resultsB_FWD[3, 3] <- length(which(resultsB_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
@@ -736,7 +737,7 @@ for(i in 1:nperm){
    Y <- spesimM[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsM_FWD[2, 1005+i] <- R2adj
+   resultsM_FWD[2, 10005+i] <- R2adj
    resultsM_FWD[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -749,10 +750,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsM_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsM_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsM_FWD[2, 1005+i]
+   resultsM_FWD[1, i+10005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsM_FWD[2, 10005+i]
  } } else{ 
           resultsM_FWD[1, i+5] <- 1   # p-val made equal to 1 
-          resultsM_FWD[1, i+1005] <- NA
+          resultsM_FWD[1, i+10005] <- NA
      }
 
 }
@@ -761,10 +762,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
 ################################
 
    resultsM_FWD[1, 3] <- length(which(resultsM_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsM_FWD[1, 4] <- median(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
-   resultsM_FWD[1, 5] <- sd(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
-   resultsM_FWD[2, 4] <- median(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
-   resultsM_FWD[2, 5] <- sd(na.omit(as.numeric(resultsM_FWD[1, c(1006:(nperm + 1005))])))
+   resultsM_FWD[1, 4] <- median(na.omit(as.numeric(resultsM_FWD[1, c(10006:(nperm + 10005))])))
+   resultsM_FWD[1, 5] <- sd(na.omit(as.numeric(resultsM_FWD[1, c(10006:(nperm + 10005))])))
+   resultsM_FWD[2, 4] <- median(na.omit(as.numeric(resultsM_FWD[2, c(10006:(nperm + 10005))])))
+   resultsM_FWD[2, 5] <- sd(na.omit(as.numeric(resultsM_FWD[2, c(10006:(nperm + 10005))])))
    resultsM_FWD[3, 3] <- length(which(resultsM_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
@@ -779,14 +780,14 @@ write.table(resultsM_FWD, file = res_file_name, sep = "\t")
    ##############
    ##############
 
-if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 38:40]
+if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 37:39]
 
 for(i in 1:nperm){
 
    Y <- spesimF[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsF_FWD[2, 1005+i] <- R2adj
+   resultsF_FWD[2, 10005+i] <- R2adj
    resultsF_FWD[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -799,10 +800,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.MEM$best$MEM)[, c(sign)]
    resultsF_FWD[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.FwdSel)))$Pr[1]
-   resultsF_FWD[1, i+1005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsF_FWD[2, 1005+i]
+   resultsF_FWD[1, i+10005] <- RsquareAdj(rda(Y, MEM.FwdSel))$adj.r.squared - resultsF_FWD[2, 10005+i]
  } } else{ 
           resultsF_FWD[1, i+5] <- 1   # p-val made equal to 1 
-          resultsF_FWD[1, i+1005] <- NA
+          resultsF_FWD[1, i+10005] <- NA
      }
 
 }
@@ -811,10 +812,10 @@ R2adj <- RsquareAdj(rda(Y, Y.MEM$best$MEM))$adj.r.squared
 ################################
 
    resultsF_FWD[1, 3] <- length(which(resultsF_FWD[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsF_FWD[1, 4] <- median(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
-   resultsF_FWD[1, 5] <- sd(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
-   resultsF_FWD[2, 4] <- median(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
-   resultsF_FWD[2, 5] <- sd(na.omit(as.numeric(resultsF_FWD[1, c(1006:(nperm + 1005))])))
+   resultsF_FWD[1, 4] <- median(na.omit(as.numeric(resultsF_FWD[1, c(10006:(nperm + 10005))])))
+   resultsF_FWD[1, 5] <- sd(na.omit(as.numeric(resultsF_FWD[1, c(10006:(nperm + 10005))])))
+   resultsF_FWD[2, 4] <- median(na.omit(as.numeric(resultsF_FWD[2, c(10006:(nperm + 10005))])))
+   resultsF_FWD[2, 5] <- sd(na.omit(as.numeric(resultsF_FWD[2, c(10006:(nperm + 10005))])))
    resultsF_FWD[3, 3] <- length(which(resultsF_FWD[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
@@ -841,7 +842,7 @@ for(i in 1:nperm){
    Y <- spesimB[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsB_AIC[2, 1005+i] <- R2adj
+   resultsB_AIC[2, 10005+i] <- R2adj
    resultsB_AIC[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -849,7 +850,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsB_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsB_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsB_AIC[2, i+1005]
+   resultsB_AIC[1, i+10005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsB_AIC[2, i+10005]
 
 }
 
@@ -857,10 +858,10 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
 ################################
 
    resultsB_AIC[1, 3] <- length(which(resultsB_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
-   resultsB_AIC[3, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
-   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
-   resultsB_AIC[2, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(1006:(nperm + 1005))])))
+   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
+   resultsB_AIC[3, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
+   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[2, c(10006:(nperm + 10005))])))
+   resultsB_AIC[2, 5] <- sd(na.omit(as.numeric(resultsB_AIC[2, c(10006:(nperm + 10005))])))
    resultsB_AIC[3, 3] <- length(which(resultsB_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
@@ -882,7 +883,7 @@ for(i in 1:nperm){
    Y <- spesimM[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsM_AIC[2, 1005+i] <- R2adj
+   resultsM_AIC[2, 10005+i] <- R2adj
    resultsM_AIC[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -890,7 +891,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsM_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsM_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsM_AIC[2, i+1005]
+   resultsM_AIC[1, i+10005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsM_AIC[2, i+10005]
 
 }
 
@@ -898,10 +899,10 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
 ##########################################
 
    resultsM_AIC[1, 3] <- length(which(resultsM_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsM_AIC[1, 4] <- median(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
-   resultsM_AIC[1, 5] <- sd(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
-   resultsM_AIC[2, 4] <- median(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
-   resultsM_AIC[2, 5] <- sd(na.omit(as.numeric(resultsM_AIC[1, c(1006:(nperm + 1005))])))
+   resultsM_AIC[1, 4] <- median(na.omit(as.numeric(resultsM_AIC[1, c(10006:(nperm + 10005))])))
+   resultsM_AIC[1, 5] <- sd(na.omit(as.numeric(resultsM_AIC[1, c(10006:(nperm + 10005))])))
+   resultsM_AIC[2, 4] <- median(na.omit(as.numeric(resultsM_AIC[2, c(10006:(nperm + 10005))])))
+   resultsM_AIC[2, 5] <- sd(na.omit(as.numeric(resultsM_AIC[2, c(10006:(nperm + 10005))])))
    resultsM_AIC[3, 3] <- length(which(resultsM_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
 
 # Output of the results:
@@ -916,14 +917,14 @@ write.table(resultsM_AIC, file = res_file_name, sep = "\t")
    ############
    ############
 
-if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 38:40]
+if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 37:39]
 
 for(i in 1:nperm){
 
    Y <- spesimF[[i]]
    lm <- lm(Y ~ ., data = x)
    R2adj <- summary(lm)$adj.r.squared
-   resultsF_AIC[2, 1005+i] <- R2adj
+   resultsF_AIC[2, 10005+i] <- R2adj
    resultsF_AIC[3, 5+i] <- lmp(lm)
 
 Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
@@ -931,7 +932,7 @@ Y.MEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = funPCNM, 
 MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
  MEM.select <- as.data.frame(Y.MEM$best$MEM)[, sort(c(MEMid))]
   resultsF_AIC[1, i+5] <- as.data.frame(anova.cca(rda(Y, MEM.select)))$Pr[1]
-   resultsF_AIC[1, i+1005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsF_AIC[2, i+1005]
+   resultsF_AIC[1, i+10005] <- RsquareAdj(rda(Y, MEM.select))$adj.r.squared - resultsF_AIC[2, i+10005]
 
 }
 
@@ -939,10 +940,10 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
 ################################
 
    resultsF_AIC[1, 3] <- length(which(resultsF_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsF_AIC[1, 4] <- median(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
-   resultsF_AIC[1, 5] <- sd(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
-   resultsF_AIC[2, 4] <- median(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
-   resultsF_AIC[2, 5] <- sd(na.omit(as.numeric(resultsF_AIC[1, c(1006:(nperm + 1005))])))
+   resultsF_AIC[1, 4] <- median(na.omit(as.numeric(resultsF_AIC[1, c(10006:(nperm + 10005))])))
+   resultsF_AIC[1, 5] <- sd(na.omit(as.numeric(resultsF_AIC[1, c(10006:(nperm + 10005))])))
+   resultsF_AIC[2, 4] <- median(na.omit(as.numeric(resultsF_AIC[2, c(10006:(nperm + 10005))])))
+   resultsF_AIC[2, 5] <- sd(na.omit(as.numeric(resultsF_AIC[2, c(10006:(nperm + 10005))])))
    resultsF_AIC[3, 3] <- length(which(resultsF_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
    
 # Output of the results:
