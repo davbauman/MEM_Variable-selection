@@ -480,10 +480,10 @@ for(i in 1:nperm){
 results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
 results[1, 4] <- median(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
 results[1, 5] <- sd(na.omit(as.numeric(results[1, c(1006:(nperm + 1005))])))
-  
+
 # Output of the results:
 # **********************
-  
+
 res_file_name <- paste("Results", framework, ran, paste(design,".MoranRes", ".txt", sep = ""), sep = "_")
 write.table(results, file = res_file_name, sep = "\t")
 
