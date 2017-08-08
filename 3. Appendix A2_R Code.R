@@ -270,17 +270,24 @@ write.table(results, file = res_file_name, sep = "\t")
 #######################################
 #######################################
 
-# Function for the selection of a subset of MEM variables based on the minimization of the
-# Moran's I of the response residuals (no environmental dataset considered here).
-# The function is based on the Moran's I index and on a Mantel correlogram for uni- and
-# multivariate response data, respectively.
-
-MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
-                          response.transform = "hellinger") 
-{
+MEM.moransel <- function (y, coord, listw, MEM.autocor = c("positive", "negative", "all"), 
+                          nperm = 999, alpha = 0.05, 
+                          response.transform = "hellinger") {
+  
+  # The function computes MEM based on any given listw provided by the user, and performs a
+  # MEM variable selection based on the minimization of the
+  # Moran's I of the response residuals (no environmental dataset considered here).
+  # The function is based on the Moran's I index and on a Mantel correlogram for uni- and
+  # multivariate response data, respectively.
+  
   SPATIAL = "FALSE"
-  neigh <- dnearneigh(x = as.matrix(coord), d1 = 0, d2 = give.thresh(dist(coord)))
-  listw <- nb2listw(neigh, style = style)
+  # number of regions:
+  if (is.vector(y) == TRUE) 
+    nb_sites <- length(y)
+  else nb_sites <- nrow(y)
+  
+  MEM.autocor <- match.arg(MEM.autocor) 
+  MEM <- scores.listw(listw, MEM.autocor = MEM.autocor)
   
   if (is.vector(y) == "TRUE") {  # The response is univariate --> Moran's I test (permutation)
     I <- moran.mc(y, listw, nperm)
@@ -295,7 +302,7 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
       I.vector <- vector("numeric", ncol(MEM)) # For the I computed with each MEM variable
       for (i in 1:ncol(MEM)) {
         mod <- lm(y ~ MEM[, i])
-        I.vector[i] <- moran(residuals(mod), listw, length(neigh), Szero(listw))$I
+        I.vector[i] <- moran(residuals(mod), listw, nb_sites, Szero(listw))$I
       }
       min.moran <- which.min(I.vector)
       # Selection of the MEM variable(s) best minimizing the Moran's I value of the residuals:
@@ -305,7 +312,7 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
       I <- moran.mc(y, listw, nperm)
     }
   } else {   # The response is multivariate --> Mantel correlogram
-    y <- decostand(y, method = response.transform)
+    if (response.transform != FALSE) y <- decostand(y, method = response.transform)
     y.D1 <- dist(y)
     M <- mantel.correlog(y.D1, XY = coord, nperm = nperm)
     sub <- as.numeric(which(M$mantel.res[, 3] > 0))   # Only positive spatial correlation
@@ -339,7 +346,7 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
   }
   
   if (SPATIAL == "FALSE") return("No significant spatial structure")
-  else return(MEM.sel)
+  else list(MEM.all = MEM, MEM.select = MEM.sel)
   # By David Bauman
 }
 
@@ -348,7 +355,7 @@ MEM.moransel <- function (y, coord, MEM, nperm = 999, style = "B", alpha = 0.05,
 
 # One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Material and methods).
 # For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of the R2adj;
-# 10000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
+# 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
 # contain R2adj.
 
 results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
@@ -424,7 +431,11 @@ funPCNM <- function (D, t) {1-(D/(4*t))^2}
 # Minimum spanning tree
 (thresh <- give.thresh(dist(C)))
 
-list <- dnearneigh(thresh, x = as.matrix(C), d1 = 0)
+if (design == "regular") {
+  list <- dnearneigh(thresh, x = as.matrix(C), d1 = 0)
+} else list <- dnearneigh(thresh+0.00001, x = as.matrix(C), d1 = 0)
+
+listw <- nb2listw(list, style = "B")
 
 # *******************************************************************************
 # The simulation begins here 
@@ -460,16 +471,12 @@ for(i in 1:nperm){
     CountSeed <- CountSeed + ncol(Y)                 
   }
   
-  Y.thresh.res <- test.W(list, Y = Y, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
+  moransel <- MEM.moransel(Y, C, listw, MEM.autocor = MEM_model)
   
-  nb <- dnearneigh(x = as.matrix(C), d1 = 0, d2 = give.thresh(dist(C)))  
-  
-  moransel <- MEM.moransel(Y, nb, Y.thresh.res$best$MEM)
-  
-  if (class(moransel) == "data.frame") {
+  if (class(moransel) == "list") {
     results[1, i+5] <- 0
-    results[1, i+10005] <- RsquareAdj(rda(Y, moransel))$adj.r.squared
-  } else {
+    results[1, i+10005] <- RsquareAdj(rda(Y, moransel$MEM.select))$adj.r.squared
+  } else {   # No spatial structure in the response
     results[1, i+5] <- 1
     results[1, i+10005] <- NA
   }
@@ -477,7 +484,7 @@ for(i in 1:nperm){
 
 # Type I error, median and sd of R2adj:
 #######################################
-  
+
 results[1, 3] <- length(which(results[1, c(6:(nperm + 5))] <= 0.05)) / nperm
 results[1, 4] <- median(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
 results[1, 5] <- sd(na.omit(as.numeric(results[1, c(10006:(nperm + 10005))])))
