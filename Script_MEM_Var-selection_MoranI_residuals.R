@@ -206,7 +206,7 @@ for(i in 1:nperm){
       set.seed(CountSeed + b)
       
       Y[, b] <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"    
-      #     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" 
+      #     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; Y[, b] <- Y[, b] + abs(min(Y[, b])) ; ran <- "rnorm" 
       #     Y[, b] <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                       
       #     Y[, b] <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3" 
     }  

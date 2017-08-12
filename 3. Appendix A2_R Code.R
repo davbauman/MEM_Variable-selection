@@ -464,7 +464,7 @@ for(i in 1:nperm){
       set.seed(CountSeed + b)
       
       Y[, b] <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"    
-      #     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" 
+      #     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; Y[, b] <- Y[, b] + abs(min(Y[, b])) ; ran <- "rnorm" 
       #     Y[, b] <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                       
       #     Y[, b] <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3" 
     }  
@@ -865,8 +865,8 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
 ################################
 
    resultsB_AIC[1, 3] <- length(which(resultsB_AIC[1, c(6:(nperm + 5))] <= 0.05)) / nperm
-   resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
-   resultsB_AIC[3, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
+   resultsB_AIC[1, 4] <- median(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
+   resultsB_AIC[1, 5] <- sd(na.omit(as.numeric(resultsB_AIC[1, c(10006:(nperm + 10005))])))
    resultsB_AIC[2, 4] <- median(na.omit(as.numeric(resultsB_AIC[2, c(10006:(nperm + 10005))])))
    resultsB_AIC[2, 5] <- sd(na.omit(as.numeric(resultsB_AIC[2, c(10006:(nperm + 10005))])))
    resultsB_AIC[3, 3] <- length(which(resultsB_AIC[3, c(6:(nperm + 5))] <= 0.05)) / nperm
