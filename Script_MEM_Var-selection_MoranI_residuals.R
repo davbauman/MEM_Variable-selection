@@ -13,25 +13,20 @@ library(adespatial)
 library(spdep)
 
 MEM.moransel <- function (y, coord, listw, MEM.autocor = c("positive", "negative", "all"), 
-                          nperm = 999, alpha = 0.05, 
-                          response.transform = "hellinger") {
+                          nperm = 999, alpha = 0.05) {
   
   # The function computes MEM based on any given listw provided by the user, and performs a
   # MEM variable selection based on the minimization of the
   # Moran's I of the response residuals (no environmental dataset considered here).
-  # The function is based on the Moran's I index and on a Mantel correlogram for uni- and
-  # multivariate response data, respectively.
+  # The function is based on the Moran's I index for univariate response data.
   
   SPATIAL = "FALSE"
   # number of regions:
-  if (is.vector(y) == TRUE) 
     nb_sites <- length(y)
-  else nb_sites <- nrow(y)
   
   MEM.autocor <- match.arg(MEM.autocor) 
   MEM <- scores.listw(listw, MEM.autocor = MEM.autocor)
   
-  if (is.vector(y) == "TRUE") {  # The response is univariate --> Moran's I test (permutation)
     I <- moran.mc(y, listw, nperm)
     if (I$p.value <= alpha) {
       SPATIAL <- "TRUE"
@@ -53,39 +48,6 @@ MEM.moransel <- function (y, coord, listw, MEM.autocor = c("positive", "negative
       y <- residuals(lm(y ~ MEM.sel[, sum(nbloop)]))
       I <- moran.mc(y, listw, nperm)
     }
-  } else {   # The response is multivariate --> Mantel correlogram
-    if (response.transform != FALSE) y <- decostand(y, method = response.transform)
-    y.D1 <- dist(y)
-    M <- mantel.correlog(y.D1, XY = coord, nperm = nperm)
-    sub <- as.numeric(which(M$mantel.res[, 3] > 0))   # Only positive spatial correlation
-    signif <- length(which(M$mantel.res[sub, 5] <= alpha))
-    if (signif > 0) {
-      SPATIAL <- "TRUE"
-      MEM.sel <- data.frame(row.names = row.names(MEM))
-    }
-    
-    nbloop <- c()
-    while (signif > 0) {
-      nbloop <- c(nbloop, 1)                   # Loop counter
-      M.vector <- vector("numeric", ncol(MEM))
-      for (i in 1:ncol(MEM)) {
-        mod <- rda(y, MEM[, i])
-        ymod.D1 <- dist(residuals(mod))
-        M <- mantel.correlog(ymod.D1, XY = coord, nperm = 1)
-        M.vector[i] <- sum(M$mantel.res[as.numeric(which(M$mantel.res[, 3] > 0)), 3])
-      }
-      min.mantel <- which.min(M.vector)
-      # Selection of the MEM variable(s) best minimizing the Moran's I value of the residuals:
-      MEM.sel[, sum(nbloop)] <- MEM[, min.mantel]
-      colnames(MEM.sel)[sum(nbloop)] <- colnames(MEM)[min.mantel]
-      y <- residuals(rda(y, MEM.sel[, sum(nbloop)]))
-      
-      y.D1 <- dist(y)
-      M <- mantel.correlog(y.D1, XY = coord, nperm = nperm)
-      sub <- as.numeric(which(M$mantel.res[, 3] > 0))   # Only positive spatial correlation
-      signif <- length(which(M$mantel.res[sub, 5] <= alpha))      
-    }
-  }
   
   if (SPATIAL == "FALSE") return("No significant spatial structure")
   else list(MEM.all = MEM, MEM.select = MEM.sel)
