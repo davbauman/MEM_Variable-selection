@@ -107,11 +107,11 @@ if (anova.cca(rda(Y, Y.DBMEM))$Pr[1] <= 0.05) {
   if(class != "try-error"){
     sign <- sort(fsel$order)
     MEM.FwdSel <- Y.DBMEM[, c(sign)]
-    if(is.matrix(MEM.FwdSel) == TRUE){ 
+#    if(is.matrix(MEM.FwdSel) == TRUE){ 
       results_FWD[a, 3] <- ncol(MEM.FwdSel)
-    } else { 
-      results_FWD[a, 3] <- 1 
-      }
+#    } else { 
+#      results_FWD[a, 3] <- 1 
+#      }
     MEM <- MEM.FwdSel
   }
 } else { 
