@@ -349,15 +349,10 @@ if(design == "regular"){
   }
 }
 
-# We now use the structured response variables we generated above to test the power and accuracy of both selection
-# **************************************************************************************************************** 
+# We now use the structured response variables we generated above to test the power and accuracy of the
+# ***************************************************************************************************** 
 # methods:
 # ********
-
-# I. Forward selection with two stopping criteria (Blanchet et al. 2008):
-# #######################################################################
-# #######################################################################
-# #######################################################################
 
 # Broad scale
 #############

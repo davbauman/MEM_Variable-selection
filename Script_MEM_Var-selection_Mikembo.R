@@ -29,50 +29,52 @@ spe <- read.table("spe_25kr.txt", h = T, sep = "\t", row.names = 1)
 sum <- c() ; for(i in 1:ncol(spe)) sum <- c(sum, sum(spe[,i]))
 spe <- spe[, which(sum >= ab)]
 
-# S?lection mod?le environnemental plus parsimonieux :
-# ****************************************************
+# Parcimonious environmental model selection:
+# *******************************************
 
 vif(env)
 vifcor(env, th = 0.7)
 env <- env[, -c(2,4,6,8,10,12,13,15:17,19:22,25,27,29:31)]   # Pour cor < 70 %
 
-#R2adj <- RsquareAdj(rda(Y, env))$adj.r.squared
-#(fwd <- forward.sel(Y, env, adjR2thresh = R2adj, R2more = 0.01))
-#order <- fwd$order
-#env <- env[, order]
+###################
+# Result matrices #
+###################
 
-#detrend <- c()
+results_FWD <- as.data.frame(matrix(nrow = ncol(spe), ncol = 14))
+row.names(results_FWD) <- colnames(spe)
+colnames(results_FWD) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
+                           "pval_X2", "pval_a", "pval_b", "pval_c")
+results_FWD[, 1] <- "DB (PCNM)"
+results_FWD[, 2] <- "1-(D/4t)^2"
+
+results_AIC <- as.data.frame(matrix(nrow = ncol(spe), ncol = 14))
+row.names(results_AIC) <- colnames(spe)
+colnames(results_AIC) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
+                           "pval_X2", "pval_a", "pval_b", "pval_c")
+results_AIC[, 1] <- "DB (PCNM)"
+results_AIC[, 2] <- "1-(D/4t)^2"
+
+results_MIR <- as.data.frame(matrix(nrow = ncol(spe), ncol = 14))
+row.names(results_MIR) <- colnames(spe)
+colnames(results_MIR) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
+                           "pval_X2", "pval_a", "pval_b", "pval_c")
+results_MIR[, 1] <- "DB (PCNM)"
+results_MIR[, 2] <- "1-(D/4t)^2"
+
+# Lists to keep all the MEM selections based on the three methods and for all species.
+# This will allow to display graphical outputs of the species spatial patterns according to
+# different MEM selection approaches:
+
+listMEMsel_FWD <- vector("list", ncol(spe))
+names(listMEMsel_FWD) <- colnames(spe)
+listMEMsel_AIC <- vector("list", ncol(spe))
+names(listMEMsel_AIC) <- colnames(spe)
+listMEMsel_MIR <- vector("list", ncol(spe))
+names(listMEMsel_MIR) <- colnames(spe)
 
 for (a in 1:ncol(spe)) {
   
-  Y <- spe[, a] ; spename <- colnames(spe)[a]
-
-#################
-# Result matrix #
-#################
-
-# Valeurs de p des simulations :
-# ******************************
-results_FWD <- as.data.frame(matrix(nrow = 1, ncol = 14))   # Valeurs de p des simulations
-
-colnames(results_FWD) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
-   "pval_X2", "pval_a", "pval_b", "pval_c")
-results_FWD[,1] <- "DB (PCNM)"
-results_FWD[,2] <- "1-(D/4t)^2"
-
-results_AIC <- as.data.frame(matrix(nrow = 1, ncol = 14))   # Valeurs de p des simulations
-
-colnames(results_AIC) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
-                           "pval_X2", "pval_a", "pval_b", "pval_c")
-results_AIC[,1] <- "DB (PCNM)"
-results_AIC[,2] <- "1-(D/4t)^2"
-
-results_MIR <- as.data.frame(matrix(nrow = 1, ncol = 14))   # Valeurs de p des simulations
-
-colnames(results_MIR) <- c("Matrix B", "Matrix A", "Nb_MEM", "X1", "X2", "a", "b", "c", "d", "pval_X1", 
-                           "pval_X2", "pval_a", "pval_b", "pval_c")
-results_MIR[,1] <- "DB (PCNM)"
-results_MIR[,2] <- "1-(D/4t)^2"
+  Y <- spe[, a]
 
    ###################
    # I. MEM Analysis #
@@ -90,173 +92,165 @@ list <- dnearneigh(thresh+1, x = as.matrix(C), d1 = 0)
 Y.DB.lw <- nb2listw(list, style = "B")
 Y.DBMEM <- scores.listw(Y.DB.lw, MEM.autocor = MEM_model)
 
+   ###################
+   # II. FWD approach:
+   ###################
+
 # Retrieval of the MEM eigenvectors of all final models (when a matrix A is used)
 # and significance test by anova.cca:
 # ***********************************
 
 R2adj <- RsquareAdj(rda(Y, Y.DBMEM))$adj.r.squared
-if(anova.cca(rda(Y, Y.DBMEM))$Pr[1] <= 0.05){
+if (anova.cca(rda(Y, Y.DBMEM))$Pr[1] <= 0.05) {
   class <- class(try(fsel <- forward.sel(Y, Y.DBMEM, adjR2thresh = R2adj, nperm = 999,
                                          R2more = 0.01), TRUE))
   if(class != "try-error"){
     sign <- sort(fsel$order)
     MEM.FwdSel <- Y.DBMEM[, c(sign)]
-    if(is.matrix(MEM.FwdSel) == TRUE){ results_FWD[1, 3] <- ncol(MEM.FwdSel)
-    } else { results_FWD[1, 3] <- 1 }
+#    if(is.matrix(MEM.FwdSel) == TRUE){ 
+      results_FWD[a, 3] <- ncol(MEM.FwdSel)
+#    } else { 
+#      results_FWD[a, 3] <- 1 
+#      }
     MEM <- MEM.FwdSel
   }
 } else { 
-  results_FWD[1, 3] <- ncol(Y.DBMEM)
+  results_FWD[a, 3] <- ncol(Y.DBMEM)
   MEM <- Y.DBMEM
 }
 
-##############################
-# II. Variation Partitioning #
-##############################
-  
-  if (length(MEM) > 0) {
+listMEMsel_FWD[[a]] <- MEM
+
+
+# Variation Partitioning #
+##########################
     
-    (varpart.real <- varpart(Y, env, MEM))
+    varpart.real <- varpart(Y, env, MEM)
     
     # Tests of significance (X1, X2, a, c)
     # *********************
     
     # X1 (env)
-    results_FWD[1, 10] <- anova.cca(rda(Y, env))$Pr[1]
-    results_FWD[1, 4] <- RsquareAdj(rda(Y, env))$adj.r.squared
+    results_FWD[a, 10] <- anova.cca(rda(Y, env))$Pr[1]
+    results_FWD[a, 4] <- RsquareAdj(rda(Y, env))$adj.r.squared
     
     # X2 (space)
-    results_FWD[1, 11] <- anova.cca(rda(Y, MEM))$Pr[1]
-    results_FWD[1, 5] <- RsquareAdj(rda(Y, MEM))$adj.r.squared
+    results_FWD[a, 11] <- anova.cca(rda(Y, MEM))$Pr[1]
+    results_FWD[a, 5] <- RsquareAdj(rda(Y, MEM))$adj.r.squared
     
     # Fraction [a], pure environmental
-    results_FWD[1, 12] <- anova.cca(rda(Y, env, MEM))$Pr[1]
-    results_FWD[1, 6] <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
+    results_FWD[a, 12] <- anova.cca(rda(Y, env, MEM))$Pr[1]
+    results_FWD[a, 6] <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
     
     # Fraction [c], pure spatial
-    results_FWD[1, 14] <- anova.cca(rda(Y, MEM, env))$Pr[1]
-    results_FWD[1, 8] <- RsquareAdj(rda(Y, MEM, env))$adj.r.squared
+    results_FWD[a, 14] <- anova.cca(rda(Y, MEM, env))$Pr[1]
+    results_FWD[a, 8] <- RsquareAdj(rda(Y, MEM, env))$adj.r.squared
     
     # Fraction [d], residuals
-    results_FWD[1, 9] <- 1 - RsquareAdj(rda(Y, cbind(MEM, env)))$adj.r.squared
+    results_FWD[a, 9] <- 1 - RsquareAdj(rda(Y, cbind(MEM, env)))$adj.r.squared
   
     # Fraction [b], not tested (0 degree of freedom, see Borcard et al. 2011)
-    results_FWD[1, 7] <- results_FWD[1, 4] - results_FWD[1, 6]
-    
-  }   # Fin du if(length(MEM) > 0)
+    results_FWD[a, 7] <- results_FWD[a, 4] - results_FWD[a, 6]
 
-fileFWD <- paste("Results_FWD___", spename, paste(".txt", sep = ""), sep = "")
-write.table(results_FWD, file = fileFWD, sep = "\t")
 
-# IV. Generation of the MEM variables with the AIC selection:
-#############################################################
-#############################################################
-#############################################################
+   # III. AIC approach:
+   ####################
+   ####################
+   ####################
 
-Y.DBMEM <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = f4, t = thresh)
+Y.DBMEM.AIC <- test.W(Y = Y, nb = list, xy = C, MEM.autocor = MEM_model, f = f4, t = thresh)
 
-MEMid <- Y.DBMEM$best$AIC$ord[1:which.min(Y.DBMEM$best$AIC$AICc)]
-MEM.select <- Y.DBMEM$best$MEM[, sort(c(MEMid))]
-if (length(class(MEM.select)) == 3) { results_AIC[1, 3] <- ncol(MEM.select)
-} else { results_AIC[1, 3] <- 1 }
+MEMid <- Y.DBMEM.AIC$best$AIC$ord[1:which.min(Y.DBMEM.AIC$best$AIC$AICc)]
+MEM.select <- Y.DBMEM.AIC$best$MEM[, sort(c(MEMid))]
+if (length(class(MEM.select)) == 3) { results_AIC[a, 3] <- ncol(MEM.select)
+} else { results_AIC[a, 3] <- 1 }
 MEM <- MEM.select
 
+listMEMsel_AIC[[a]] <- MEM
 
-##############################
-# II. Variation Partitioning #
-##############################
+# Variation Partitioning #
+##########################
 
-for(i in 1:nrow(results_AIC)){
-  
-  MEM <- list_MEM[[i]]
-  
-  if(length(MEM) > 0) {
-    
-    (varpart.real <- varpart(Y, env, MEM))
+    varpart.real <- varpart(Y, env, MEM)
     
     # Tests of significance (X1, X2, a, c)
     # *********************
     
     # X1 (env)
-    results_AIC[i, 10] <- anova.cca(rda(Y, env))$Pr[1]
-    results_AIC[i, 4] <- RsquareAdj(rda(Y, env))$adj.r.squared
+    results_AIC[a, 10] <- anova.cca(rda(Y, env))$Pr[1]
+    results_AIC[a, 4] <- RsquareAdj(rda(Y, env))$adj.r.squared
     
     # X2 (space)
-    results_AIC[i, 11] <- anova.cca(rda(Y, MEM))$Pr[1]
-    results_AIC[i, 5] <- RsquareAdj(rda(Y, MEM))$adj.r.squared
+    results_AIC[a, 11] <- anova.cca(rda(Y, MEM))$Pr[1]
+    results_AIC[a, 5] <- RsquareAdj(rda(Y, MEM))$adj.r.squared
     
     # Fraction [a], pure environmental
-    results_AIC[i, 12] <- anova.cca(rda(Y, env, MEM))$Pr[1]
-    results_AIC[i, 6] <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
+    results_AIC[a, 12] <- anova.cca(rda(Y, env, MEM))$Pr[1]
+    results_AIC[a, 6] <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
     
     # Fraction [c], pure spatial
-    results_AIC[i, 14] <- anova.cca(rda(Y, MEM, env))$Pr[1]
-    results_AIC[i, 8] <- RsquareAdj(rda(Y, MEM, env))$adj.r.squared
+    results_AIC[a, 14] <- anova.cca(rda(Y, MEM, env))$Pr[1]
+    results_AIC[a, 8] <- RsquareAdj(rda(Y, MEM, env))$adj.r.squared
     
     # Fraction [d], residuals
-    results_AIC[i, 9] <- 1 - RsquareAdj(rda(Y, cbind(MEM, env)))$adj.r.squared
+    results_AIC[a, 9] <- 1 - RsquareAdj(rda(Y, cbind(MEM, env)))$adj.r.squared
     
-    # Test of the [b] fraction (Vleminckx et al. 2016):
-    # *************************************************
+    # Fraction [b], not tested (0 degree of freedom, see Borcard et al. 2011)
+    results_AIC[a, 7] <- results_AIC[a, 4] - results_AIC[a, 6]    
     
-    # Pour sauver les valeurs simul?es
-    E.b     = c() ## vecteur pour stocker le R? de la fraction b
     
-    # M = matrice  => colonnes 1 et 2              = coord. x et y
-    #              => colonnes 3:1+2         = abond. des sp
-    #              => colonnes 1+3 ? ncol(M) = var. en
+   ###################
+   # IV. MIR approach:
+   ###################
+   
+    source("MEM.moransel.R") 
+    moransel <- MEM.moransel(Y, C, Y.DB.lw, MEM.autocor = MEM_model)
     
-    M <- cbind(C, Y, env)
+    if (class(moransel) == "list") {
+      results_MIR[a, 3] <- ncol(moransel$MEM.select)
+      MEM <- moransel$MEM.select
+    } else {
+      results_MIR[a, 3] <- ncol(Y.DBMEM)
+      MEM <- Y.DBMEM
+    }
     
-    for(k in 1:ntoro){
-      set.seed(k)
-      M2 <- M 
-      
-      rx <- ceiling(runif(1, 0.01, 0.99) * Xmax)
-      ry <- ceiling(runif(1, 0.01, 0.99) * Ymax) 
-      
-      # Pour d?cider si effet miroir ou pas (retournement 180? de la grille)
-      sens = runif(1, min = 0, max = 1)  
-      if(sens <= 0.5) { M2[,1] <-                (M2 [,1] + rx) %% max(M2 [,1]) 
-      M2[,2] <-                (M2 [,2] + ry) %% max(M2 [,2]) }
-      if(sens > 0.5)  { M2[,1] <- max(M2 [,1]) - (M2 [,1] + rx) %% max(M2 [,1]) 
-      M2[,2] <- max(M2 [,2]) - (M2 [,2] + ry) %% max(M2 [,2]) }
-      
-      # R?ordonnons pour assembler coordonn?es initiales (dans M3 = M) aux variables
-      # environnementales 'toroidalis?es' (dans M2):
-      
-      M3 <- M ; M2 <- M2[order(M2[,2]), ] ; M2 <- M2[order(M2[,1]), ]
-      M3[, (1+3):ncol(M)] <- M2[ ,(1+3):ncol(M)]
-      
-      # Matrice de variables environnementales translat?es
-      
-      E.toro <- M3[,(1+3):ncol(M)]   # variables env. translat?es
-      
-      # Pour sauver r?sultats des partitions de variations des dataset simul?s
-      
-      E.b <- c(E.b, varpart(M[,c(3:(1+2))], E.toro, MEM)$part$indfract$Adj.R.square[2])
-      
-    }  # end "for(k in 1:ntoro){"
+    listMEMsel_MIR[[a]] <- MEM
+ 
+    # Variation Partitioning #
+    ##########################
     
-    # Valeurs r?elles
-    # ???????????????
+    varpart.real <- varpart(Y, env, MEM)
     
-    R2RDA <- RsquareAdj(rda(Y, env))$adj.r.squared
-    a <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
-    b <- R2RDA - a   # R2 de la fraction b
+    # Tests of significance (X1, X2, a, c)
+    # *********************
     
-    results_AIC[i, 7] <- b
+    # X1 (env)
+    results_MIR[a, 10] <- anova.cca(rda(Y, env))$Pr[1]
+    results_MIR[a, 4] <- RsquareAdj(rda(Y, env))$adj.r.squared
     
-    ## P-value R? RDA simul?e (b = valeur observ?e du R?)
-    results_AIC[i, 13] <- length ( E.b[E.b > b]) / (ntoro+1) 
+    # X2 (space)
+    results_MIR[a, 11] <- anova.cca(rda(Y, MEM))$Pr[1]
+    results_MIR[a, 5] <- RsquareAdj(rda(Y, MEM))$adj.r.squared
     
-  }   # Fin du if(length(MEM) > 0)
-}   # Fin de la boucle for
+    # Fraction [a], pure environmental
+    results_MIR[a, 12] <- anova.cca(rda(Y, env, MEM))$Pr[1]
+    results_MIR[a, 6] <- RsquareAdj(rda(Y, env, MEM))$adj.r.squared
+    
+    # Fraction [c], pure spatial
+    results_MIR[a, 14] <- anova.cca(rda(Y, MEM, env))$Pr[1]
+    results_MIR[a, 8] <- RsquareAdj(rda(Y, MEM, env))$adj.r.squared
+    
+    # Fraction [d], residuals
+    results_MIR[a, 9] <- 1 - RsquareAdj(rda(Y, cbind(MEM, env)))$adj.r.squared
+    
+    # Fraction [b], not tested (0 degree of freedom, see Borcard et al. 2011)
+    results_MIR[a, 7] <- results_MIR[a, 4] - results_MIR[a, 6]         
 
-fileAIC <- paste("Results_AIC___", spename, paste(".txt", sep = ""), sep = "")
-write.table(results_AIC[-c(9:16, 18, 19), ], file = fileAIC, sep = "\t")
+}   # Fin du for de l'espèce 'a'
 
-}   # Fin du for de l'esp?ce 'a'
+write.table(results_FWD, "results_Mikembo_FWD.txt", sep = "\t")
+write.table(results_AIC, "results_Mikembo_AIC.txt", sep = "\t")
+write.table(results_MIR, "results_Mikembo_MIR.txt", sep = "\t")
 
-write.table(detrend, file = "detrending.by.species.txt", sep = "\t")
+# write.table(detrend, file = "detrending.by.species.txt", sep = "\t")
 
