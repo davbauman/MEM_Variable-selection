@@ -1,18 +1,18 @@
-# Bauman et al. 2017. Disentangling good from bad practices of spatial variable selection for Moran?s eigenvector maps 
-# (MEM). Ecography.
+# Bauman et al. 2017. Disentangling good from bad practices of spatial, temporal and phylogenetic
+# variable selection in eigenvector-based methods. - Ecography.
 
-# Appendix A2: R code used to compute the type I error rates, power and R? estimation accuracy for the MEM thinned model
-# construction using AIC based and forward selection.
-# **********************************************************************************************************************
+# Appendix A2: R code used to compute the type I error rate, power and R² estimation accuracy 
+# for the different eigenvector selection methods.
+# *******************************************************************************************
 
-#############################################################################################################
-#############################################################################################################
-#############################################################################################################
-#*****# Test and comparison of the type I errors of the forward selection and the AIC-based selection #*****#
-#*****#    of MEM variables, following Blanchet et al. (2008) and Dray et al. (2006), respectively.   #*****#
-#############################################################################################################
-#############################################################################################################
-#############################################################################################################
+###############################################################################################
+###############################################################################################
+###############################################################################################
+#*****# Test and comparison of the type I error rate of the FWD, AIC and MIR approaches #*****#
+#*****#     for selecting an optimal subset of eigenvectors within a given W matrix.    #*****#
+###############################################################################################
+###############################################################################################
+###############################################################################################
 
 
 # Useful packages:
@@ -25,18 +25,18 @@ library(spdep)
 # Construction of a result matrix:
 # ********************************
 
-# One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Material and methods).
-# For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of the R2adj;
-# 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
-# contain R2adj.
+# One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Methods
+# section). For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of 
+# the R2adj; 10000 permutations, so that columns 6 to 10005 contain p-values, and columns 
+# 10006 to 20005 contain R2adj.
 
 results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
    paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
-results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
-# minimun spanning tree are not connected.
+results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the largest 
+# edge of the minimun spanning tree are not connected.
 
 results[, 2] <- "1-(D/4t)^2"
 
@@ -46,25 +46,19 @@ results[, 2] <- "1-(D/4t)^2"
 # Define if we want positive, negative or all eigenvectors
 
 MEM_model = "positive"    ; autocor <- "pos"
-#MEM_model = "negative"   ; autocor <- "neg"
-#MEM_model = "all"   ; autocor <- "all"  
-
-# Do we work with univariate or multivariate random dependent variables?
-
-framework <- "univariate"    # "univariate" or "multivariate" 
 
 # Regular or irregular sampling design:
 
 design <- "regular"   # or "irregular"
 
-nperm <- 10000
+nperm <- 10000   # Max 10000 (otherwise, the result matrix needs to be adapted)
 
-# Generation of the 117 quadrats:
-#################################
+# Generation of the 117 sampled quadrats:
+#########################################
 
 if(design == "regular"){
 
-   C <- as.matrix(matrix(0, ncol = 2, nrow = 1250))   # 1250 = nb quadrats de 20 m
+   C <- as.matrix(matrix(0, ncol = 2, nrow = 1250))   # 1250 = nb quadrats
 
    # We define the quadrat coordinates
    X1 <- c()
@@ -86,7 +80,7 @@ if(design == "regular"){
 
    # We choose 117 randomly spaced quadrats inside the grid 
 
-   C <- as.matrix(matrix(0, ncol = 2, nrow = 117))   # 1250 = nb quadrats de 20 m
+   C <- as.matrix(matrix(0, ncol = 2, nrow = 117))   # 1250 = nb quadrats
 
    set.seed(123)
    C[, 1] <- runif(117, min = 1, max = 50)
@@ -95,8 +89,8 @@ if(design == "regular"){
 
 xy.d1 <- dist(C)
 
-# Connectivity and weighting matrices based on the PCNM method:
-# *************************************************************
+# Connectivity and weighting matrices based on the PCNM criteria:
+# ***************************************************************
 
 funPCNM <- function (D, t) {1-(D/(4*t))^2}          
 
@@ -119,30 +113,12 @@ list <- dnearneigh(thresh, x = as.matrix(C), d1 = 0)
 
 for(i in 1:nperm){   
 
-if(framework == "univariate"){
-   
    set.seed(i)
 
    Y <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"             # Random (uniform)
 #   Y <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" # Random (normal)
 #   Y <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                        # Exponential (1)
 #   Y <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3"                    # Exponential cubed
-
-} else {
-
-   Y <- matrix(ncol = 5, nrow = nrow(C))
-   if(i == 1) CountSeed <- 1
-   for(b in 1:ncol(Y)){
-      
-      set.seed(CountSeed + b)
-
-     Y[, b] <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"    
-#     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" 
-#     Y[, b] <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                       
-#     Y[, b] <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3" 
-   }  
-   CountSeed <- CountSeed + ncol(Y)                 
-}
 
 # Now we can apply the function test.W()
 
@@ -165,7 +141,6 @@ MEMid <- Y.thresh.res$best$AIC$ord[1:which.min(Y.thresh.res$best$AIC$AICc)]
    results[1, 4] <- median(as.numeric(results[1, c(10006:(nperm + 10005))]))
    results[1, 5] <- sd(as.numeric(results[1, c(10006:(nperm + 10005))]))
 
-
 # Output of the results:
 # **********************
 
@@ -175,28 +150,20 @@ write.table(results, file = res_file_name, sep = "\t")
 
 
 
-# II. Forward selection approach:
+# II. Forward selection approach (Blanchet et al. 2008):
 #################################
 #################################
 #################################
-
 
 # Construction of a result matrix:
 # ********************************
-
-# One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Introduction).
-# For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of the R2adj;
-# 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
-# contain R2adj.
 
 results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
    paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
-results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
-# minimun spanning tree are not connected.
-
+results[, 1] <- "Thresh MST"   
 results[, 2] <- "1-(D/4t)^2"
 
 # Simulation procedure:
@@ -204,8 +171,6 @@ results[, 2] <- "1-(D/4t)^2"
 
 for(i in 1:nperm){   
 
-if(framework == "univariate"){
-   
    set.seed(i)
 
    Y <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"             # Random (uniform)
@@ -213,31 +178,14 @@ if(framework == "univariate"){
 #   Y <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                        # Exponential (1)
 #   Y <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3"                    # Exponential cubed
 
-} else {
-
-   Y <- matrix(ncol = 5, nrow = nrow(C))
-   if(i == 1) CountSeed <- 1
-   for(b in 1:ncol(Y)){
-      
-      set.seed(CountSeed + b)
-
-     Y[, b] <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"    
-#     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" 
-#     Y[, b] <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                       
-#     Y[, b] <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3" 
-   }  
-   CountSeed <- CountSeed + ncol(Y)                 
-}
-
-
 # Now we can apply the function test.W()
 
 Y.thresh.res <- test.W(list, Y = Y, xy = C, MEM.autocor = MEM_model, f = funPCNM, t = thresh)
 
 R2adj <- RsquareAdj(rda(Y, Y.thresh.res$best$MEM))$adj.r.squared
  if(anova.cca(rda(Y, Y.thresh.res$best$MEM))$Pr[1] <= 0.05){
- class <- class(try(fsel <- forward.sel(Y, Y.thresh.res$best$MEM, adjR2thresh = R2adj, nperm = 999)
-   , TRUE))
+ class <- class(try(fsel <- forward.sel(Y, Y.thresh.res$best$MEM, adjR2thresh = R2adj, 
+                                        nperm = 999), TRUE))
   if(class != "try-error"){
    sign <- sort(fsel$order)
    MEM.FwdSel <- as.data.frame(Y.thresh.res$best$MEM)[, c(sign)]
@@ -261,7 +209,8 @@ R2adj <- RsquareAdj(rda(Y, Y.thresh.res$best$MEM))$adj.r.squared
 # Output of the results:
 # **********************
 
-res_file_name <- paste("Results", framework, ran, paste(design,".FwdSel", ".txt", sep = ""), sep = "_")
+res_file_name <- paste("Results", framework, ran, paste(design,".FwdSel", ".txt", sep = ""), 
+                       sep = "_")
 
 write.table(results, file = res_file_name, sep = "\t")
 
@@ -315,18 +264,12 @@ MEM.moransel <- function (y, coord, listw, MEM.autocor = c("positive", "negative
 # Construction of a result matrix:
 # ********************************
 
-# One line = Matrix W created using the db-MEM corresponding to the PCNM criteria (see Material and methods).
-# For the columns: column 3 = type I error; column 4 = median R2adj; column 5 = sd of the R2adj;
-# 1000 permutations, so that columns 6 to 1005 contain p-values, and columns 1006 to 2005 
-# contain R2adj.
-
 results <- as.data.frame(matrix(nrow = 1, ncol = 20005))
 
 colnames(results) <- c("Matrix B", "Matrix A", "type I error", "mean R2adj", "sd R2adj",
                        paste("p-val", c(1:10000), sep = ""), paste("R2_", c(1:10000), sep = ""))
 
-results[, 1] <- "Thresh MST"   # Two quadrats further away from one another than the smallest edge of the
-# minimun spanning tree are not connected.
+results[, 1] <- "Thresh MST"
 
 results[, 2] <- "1-(D/4t)^2"
 
@@ -336,12 +279,6 @@ results[, 2] <- "1-(D/4t)^2"
 # Define if we want positive, negative or all eigenvectors
 
 MEM_model = "positive"    ; autocor <- "pos"
-#MEM_model = "negative"   ; autocor <- "neg"
-#MEM_model = "all"   ; autocor <- "all"  
-
-# Do we work with univariate or multivariate random dependent variables?
-
-framework <- "univariate"    # "univariate" or "multivariate" 
 
 # Regular or irregular sampling design:
 
@@ -407,31 +344,13 @@ listw <- nb2listw(list, style = "B")
 #######################
 
 for(i in 1:nperm){   
-  
-  if(framework == "univariate"){
-    
+
     set.seed(i)
     
     Y <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"             # Random (uniform)
     #   Y <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; ran <- "rnorm" # Random (normal)
     #   Y <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                        # Exponential (1)
     #   Y <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3"                    # Exponential cubed
-    
-  } else {
-    
-    Y <- matrix(ncol = 5, nrow = nrow(C))
-    if(i == 1) CountSeed <- 1
-    for(b in 1:ncol(Y)){
-      
-      set.seed(CountSeed + b)
-      
-      Y[, b] <- runif(nrow(C), min = 0, max = 20) ; ran <- "runif"    
-      #     Y[, b] <- rnorm(nrow(C), mean = 0, sd = runif(1, 1, 3)) ; Y[, b] <- Y[, b] + abs(min(Y[, b])) ; ran <- "rnorm" 
-      #     Y[, b] <- rexp(nrow(C), rate = 1) ; ran <- "rexp"                       
-      #     Y[, b] <- rexp(nrow(C), rate = 1)^3  ; ran <- "rexp3" 
-    }  
-    CountSeed <- CountSeed + ncol(Y)                 
-  }
   
   moransel <- MEM.moransel(Y, C, listw, MEM.autocor = MEM_model)
   
@@ -458,14 +377,14 @@ res_file_name <- paste("Results", framework, ran, paste(design,".MoranRes", ".tx
 write.table(results, file = res_file_name, sep = "\t")
 
 
-######################################################################################################
-######################################################################################################
-######################################################################################################
-# ****** Test of the power and R? estimation accuracy of 1) the forward selection with double ****** # 
-# ******        stopping criterion, and of 2) the AIC-based procedure of MEM selection        ****** #
-######################################################################################################
-######################################################################################################
-######################################################################################################
+################################################################################################
+################################################################################################
+################################################################################################
+# ******       Test of the power and R² estimation accuracy of the three EV selection # ****** #
+# ******                                    approaches                                # ****** #
+################################################################################################
+################################################################################################
+################################################################################################
 
 
 # Useful packages and functions:
@@ -487,7 +406,8 @@ lmp <- function (modelobject) {
 
 # Construction of a results matrix for each scale and for MEM selection methods:
 # ******************************************************************************
-# B, M, F stand for Broad, Medium and Fine; AIC et FWD stand for AIC-based selection and forward selection
+# B, M, F stand for Broad, Medium and Fine; AIC, FWD and MIR stand for AIC-based selection,
+# forward selection of Blanchet et al. 2008, and Minimisation of Moran's I in Residuals.
 
 resultsB_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsB_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
@@ -532,12 +452,6 @@ resultsF_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 # Define if we want positive, negative or all eigenvectors
 
 MEM_model = "positive"    ; autocor <- "pos"
-#MEM_model = "negative"   ; autocor <- "neg"
-#MEM_model = "positive"   ; autocor <- "all"  
-
-# Do we work with univariate or multivariate random dependent variables?
-
-framework <- "univariate"    # "univariate" or "multivariate" 
 
 # Regular or irregular sampling design:
 
@@ -550,7 +464,7 @@ nperm <- 10000
 
 if(design == "regular"){
 
-   C <- as.matrix(matrix(0, ncol = 2, nrow = 1250))   # 1250 = nb quadrats de 20 m
+   C <- as.matrix(matrix(0, ncol = 2, nrow = 1250))   # 1250 = nb quadrats
 
    # We define the quadrat coordinates
    X1 <- c()
@@ -576,7 +490,7 @@ if(design == "regular"){
 
    # We choose 117 irregularly spaced quadrats inside the grid 
 
-   C <- as.matrix(matrix(0, ncol = 2, nrow = 117))   # 1250 = nb quadrats de 20 m
+   C <- as.matrix(matrix(0, ncol = 2, nrow = 117))   # 1250 = nb quadrats
 
    set.seed(12)
    C[,1] <- runif(117, min = 1, max = 50)
@@ -590,9 +504,9 @@ if(design == "regular"){
 
 xy.d1 <- dist(C)
 
-# We generate the MEM variables with the db-MEM (PCNM) and generate nperm simulated species structured
-# at 1) broad, 2) intermediate, and 3) fine scale.
-######################################################################################################
+# We generate the MEM variables with the db-MEM (PCNM) and generate nperm simulated species 
+# structured at 1) broad, 2) intermediate, and 3) fine scale.
+###########################################################################################
 
 funPCNM <- function (D, t) {1-(D/(4*t))^2}          
 
@@ -606,11 +520,11 @@ Y.DB.lw <- nb2listw(list)
 Y.DBMEM <- scores.listw(Y.DB.lw, MEM.autocor = MEM_model)
 MEM <- as.data.frame(Y.DBMEM)
 
-# MEM is the r?f?rence used for building the response variables. 
+# MEM is the reference used for building the response variables. 
 
-spesimB <- vector("list", nperm)   # List of the nperm simulated structured species (Broad scale) 
-spesimM <- vector("list", nperm)   # List of the nperm simulated structured species (Medium scale)
-spesimF <- vector("list", nperm)   # List of the nperm simulated structured species (Fine scale)
+spesimB <- vector("list", nperm)   # List of the nperm simulated species (Broad scale) 
+spesimM <- vector("list", nperm)   # List of the nperm simulated species (Medium scale)
+spesimF <- vector("list", nperm)   # List of the nperm simulated species (Fine scale)
 
 n <- nrow(C)
 
@@ -633,10 +547,9 @@ if(design == "regular"){
 }
 
 
-# We now use the structured response variables we generated above to test the power and accuracy of both selection
-# **************************************************************************************************************** 
-# methods:
-# ********
+# We now use the structured response variables we generated above to test the power and 
+# accuracy of the three MEM subsets (three EV selection approaches):
+# *************************************************************************************
 
 # I. Forward selection with two stopping criteria (Blanchet et al. 2008):
 # #######################################################################
@@ -921,3 +834,151 @@ MEMid <- Y.MEM$best$AIC$ord[1:which.min(Y.MEM$best$AIC$AICc)]
 res_file_name <- paste("Power", "Fine_AIC", paste(design, ".txt", sep = ""), sep = "_")
 
 write.table(resultsF_AIC, file = res_file_name, sep = "\t")
+
+# III. Minimisation of the Moran's I in the Residuals (MIR approach):
+# ###################################################################
+# ###################################################################
+# ###################################################################
+
+# Broad scale
+#############
+#############
+
+x <- MEM[, 1:3]
+
+for(i in 1:nperm){
+  
+  Y <- spesimB[[i]]
+  lm <- lm(Y ~ ., data = x)
+  R2adj <- summary(lm)$adj.r.squared
+  resultsB_I[2, 10005+i] <- R2adj
+  resultsB_I[3, 5+i] <- lmp(lm)
+  
+  # Selection based on the minimum number of eigenvectors minimizing the Moran's I of Y's residuals:
+  
+  moransel <- MEM.moransel(Y, C, Y.DB.lw, MEM.autocor = MEM_model)
+  
+  if (class(moransel) == "list") {
+    resultsB_I[1, i+5] <- 0
+    resultsB_I[1, i+10005] <- RsquareAdj(rda(Y, moransel$MEM.select))$adj.r.squared - resultsB_I[2, 10005+i]
+    resultsB_I[4, i+5] <- ncol(moransel$MEM.select)
+  } else {  # No spatial structure in the response
+    resultsB_I[1, i+5] <- 1
+    resultsB_I[1, i+10005] <- NA
+  }
+}
+
+# Power, median and sd of DeltaR2adj:
+#####################################
+
+resultsB_I[1, 3] <- length(which(resultsB_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsB_I[1, 4] <- median(na.omit(as.numeric(resultsB_I[1, c(10006:(nperm + 10005))])))
+resultsB_I[1, 5] <- sd(na.omit(as.numeric(resultsB_I[1, c(10006:(nperm + 10005))])))
+resultsB_I[2, 4] <- median(na.omit(as.numeric(resultsB_I[2, c(10006:(nperm + 10005))])))
+resultsB_I[2, 5] <- sd(na.omit(as.numeric(resultsB_I[2, c(10006:(nperm + 10005))])))
+resultsB_I[3, 3] <- length(which(resultsB_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsB_I[4, 4] <- median(na.omit(as.numeric(resultsB_I[4, c(6:(nperm + 5))])))
+resultsB_I[4, 5] <- sd(na.omit(as.numeric(resultsB_I[4, c(6:(nperm + 5))])))
+
+# Output of the results:
+# **********************
+
+res_file_name <- paste("Power", "Broad_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+
+write.table(resultsB_I, file = res_file_name, sep = "\t")
+
+# Medium scale
+#############
+#############
+
+if(design == "regular") x <- MEM[, 25:27] else x <- MEM[, 19:21]
+
+for(i in 1:nperm){
+  
+  Y <- spesimM[[i]]
+  lm <- lm(Y ~ ., data = x)
+  R2adj <- summary(lm)$adj.r.squared
+  resultsM_I[2, 10005+i] <- R2adj
+  resultsM_I[3, 5+i] <- lmp(lm)
+  
+  # Selection based on the minimum number of eigenvectors minimizing the Moran's I of Y's residuals:
+  
+  moransel <- MEM.moransel(Y, C, Y.DB.lw, MEM.autocor = MEM_model)
+  
+  if (class(moransel) == "list") {
+    resultsM_I[1, i+5] <- 0
+    resultsM_I[1, i+10005] <- RsquareAdj(rda(Y, moransel$MEM.select))$adj.r.squared - resultsM_I[2, 10005+i]
+    resultsM_I[4, i+5] <- ncol(moransel$MEM.select)
+  } else {
+    resultsM_I[1, i+5] <- 1
+    resultsM_I[1, i+10005] <- NA
+  }
+}
+
+# Power, median and sd of DeltaR2adj:
+#####################################
+
+resultsM_I[1, 3] <- length(which(resultsM_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsM_I[1, 4] <- median(na.omit(as.numeric(resultsM_I[1, c(10006:(nperm + 10005))])))
+resultsM_I[1, 5] <- sd(na.omit(as.numeric(resultsM_I[1, c(10006:(nperm + 10005))])))
+resultsM_I[2, 4] <- median(na.omit(as.numeric(resultsM_I[2, c(10006:(nperm + 10005))])))
+resultsM_I[2, 5] <- sd(na.omit(as.numeric(resultsM_I[2, c(10006:(nperm + 10005))])))
+resultsM_I[3, 3] <- length(which(resultsM_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsM_I[4, 4] <- median(na.omit(as.numeric(resultsM_I[4, c(6:(nperm + 5))])))
+resultsM_I[4, 5] <- sd(na.omit(as.numeric(resultsM_I[4, c(6:(nperm + 5))])))
+
+# Output of the results:
+# **********************
+
+res_file_name <- paste("Power", "Medium_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+
+write.table(resultsM_I, file = res_file_name, sep = "\t")
+
+# Fine scale
+#############
+#############
+
+if(design == "regular") x <- MEM[, 56:58] else x <- MEM[, 37:39]
+
+for(i in 1:nperm){
+  
+  Y <- spesimF[[i]]
+  lm <- lm(Y ~ ., data = x)
+  R2adj <- summary(lm)$adj.r.squared
+  resultsF_I[2, 10005+i] <- R2adj
+  resultsF_I[3, 5+i] <- lmp(lm)
+  
+  # Selection based on the minimum number of eigenvectors minimizing the Moran's I of Y's residuals:
+  
+  moransel <- MEM.moransel(Y, C, Y.DB.lw, MEM.autocor = MEM_model)
+  
+  if (class(moransel) == "list") {
+    resultsF_I[1, i+5] <- 0
+    resultsF_I[1, i+10005] <- RsquareAdj(rda(Y, moransel$MEM.select))$adj.r.squared - resultsF_I[2, 10005+i]
+    resultsF_I[4, i+5] <- ncol(moransel$MEM.select)
+  } else {
+    resultsF_I[1, i+5] <- 1
+    resultsF_I[1, i+10005] <- NA
+  }
+}
+
+# Power, median and sd of DeltaR2adj:
+#####################################
+
+resultsF_I[1, 3] <- length(which(resultsF_I[1, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsF_I[1, 4] <- median(na.omit(as.numeric(resultsF_I[1, c(10006:(nperm + 10005))])))
+resultsF_I[1, 5] <- sd(na.omit(as.numeric(resultsF_I[1, c(10006:(nperm + 10005))])))
+resultsF_I[2, 4] <- median(na.omit(as.numeric(resultsF_I[2, c(10006:(nperm + 10005))])))
+resultsF_I[2, 5] <- sd(na.omit(as.numeric(resultsF_I[2, c(10006:(nperm + 10005))])))
+resultsF_I[3, 3] <- length(which(resultsF_I[3, c(6:(nperm + 5))] <= 0.05)) / nperm
+resultsF_I[4, 4] <- median(na.omit(as.numeric(resultsF_I[4, c(6:(nperm + 5))])))
+resultsF_I[4, 5] <- sd(na.omit(as.numeric(resultsF_I[4, c(6:(nperm + 5))])))
+
+# Output of the results:
+# **********************
+
+res_file_name <- paste("Power", "Fine_Moran.Res", paste(design, ".txt", sep = ""), sep = "_")
+
+write.table(resultsF_I, file = res_file_name, sep = "\t")
+
+

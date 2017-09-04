@@ -254,3 +254,48 @@ write.table(results_MIR, "results_Mikembo_MIR.txt", sep = "\t")
 
 # write.table(detrend, file = "detrending.by.species.txt", sep = "\t")
 
+# ****************************************************************************************
+# Visualisation of the spatial patterns highlighted by the different eigenvector selection
+# methods:
+# ****************************************************************************************
+
+listMEMsel_AIC
+listMEMsel_FWD
+listMEMsel_MIR
+
+colnames(spe)
+a <- 13
+
+Y <- spe[, a]
+
+MEM_AIC <- listMEMsel_AIC[[a]]
+MEM_FWD <- listMEMsel_FWD[[a]]
+MEM_MIR <- listMEMsel_MIR[[a]]
+
+lm_AIC <- lm(Y ~., data = MEM_AIC)
+lm_FWD <- lm(Y ~., data = MEM_FWD)
+lm_MIR <- lm(Y ~., data = MEM_MIR)
+
+par(mfrow = c(3, 1))
+s.value(C, lm_AIC$fitted.values)
+s.value(C, lm_FWD$fitted.values)
+s.value(C, lm_MIR$fitted.values)
+
+################
+# Simulated
+# Broad (i = 1000)
+x <- MEM[, c(1:3)]
+MEM_AIC <- MEM.select
+MEM_FWD <- MEM.FwdSel
+MEM_MIR <- moransel$MEM.select
+
+lm_ref <- lm(Y ~., data= x)
+lm_AIC <- lm(Y ~., data = MEM_AIC)
+lm_FWD <- lm(Y ~., data = MEM_FWD)
+lm_MIR <- lm(Y ~., data = MEM_MIR)
+
+par(mfrow = c(4, 1))
+s.value(C, lm_ref$fitted.values)
+s.value(C, lm_AIC$fitted.values)
+s.value(C, lm_FWD$fitted.values)
+s.value(C, lm_MIR$fitted.values)
