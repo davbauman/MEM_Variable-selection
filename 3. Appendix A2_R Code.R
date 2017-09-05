@@ -421,6 +421,12 @@ colnames(resultsB_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "s
 resultsB_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
 resultsB_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
+resultsB_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
+colnames(resultsB_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
+                          paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsB_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsB_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
+
 resultsM_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsM_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
    paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
@@ -432,6 +438,12 @@ colnames(resultsM_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "s
    paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
 resultsM_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
 resultsM_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
+
+resultsM_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
+colnames(resultsM_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
+                          paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsM_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsM_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
 resultsF_AIC <- as.data.frame(matrix(nrow = 4, ncol = 20005))
 colnames(resultsF_AIC) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
@@ -445,6 +457,11 @@ colnames(resultsF_FWD) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "s
 resultsF_FWD[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
 resultsF_FWD[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
+resultsF_I <- as.data.frame(matrix(nrow = 4, ncol = 20005))
+colnames(resultsF_I) <- c("Matrix B", "Matrix A", "Power", "MedianDeltaR2", "sd DeltaR2",
+                          paste("p-val", c(1:10000), sep = ""), paste("deltaR2_", c(1:10000), sep = ""))
+resultsF_I[,1] <- c("Thresh MST", "R2adjReal", "pvalReal", "NbVar")
+resultsF_I[,2] <- c("1-(D/4t)^2", NA, NA, NA)
 
 # Definition of the simulation parameters:
 ##########################################
