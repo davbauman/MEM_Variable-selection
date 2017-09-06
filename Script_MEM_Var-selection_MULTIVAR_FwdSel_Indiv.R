@@ -138,7 +138,8 @@ for (i in 1:nperm) {
   # *********************************************
   R2adj <- RsquareAdj(rda(Y, MEM))$adj.r.squared
   if (anova.cca(rda(Y, MEM))$Pr[1] <= 0.05) {
-    class <- class(try(fsel <- forward.sel(Y, MEM, adjR2thresh = R2adj, nperm = 999), TRUE))
+    #class <- class(try(fsel <- forward.sel(Y, MEM, adjR2thresh = R2adj, nperm = 999), TRUE))
+    class <- class(try(fsel <- forward.sel(Y, MEM, nperm = 999), TRUE))
     if (class != "try-error") {
       sign <- sort(fsel$order)
       MEM.FwdSel <- as.data.frame(MEM)[, c(sign)]
@@ -154,7 +155,8 @@ for (i in 1:nperm) {
     y <- Y[, h]
     R2adj <- RsquareAdj(rda(y, MEM))$adj.r.squared
     if (anova.cca(rda(y, MEM))$Pr[1] <= 0.05) {
-      class <- class(try(fsel <- forward.sel(y, MEM, adjR2thresh = R2adj, nperm = 999), TRUE))
+      #class <- class(try(fsel <- forward.sel(y, MEM, adjR2thresh = R2adj, nperm = 999), TRUE))
+      class <- class(try(fsel <- forward.sel(y, MEM, nperm = 999), TRUE))
       if (class != "try-error") MEM_union <- c(MEM_union, sort(fsel$order))
     }
   }
