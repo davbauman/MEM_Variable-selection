@@ -11,8 +11,13 @@ library(spdep)
 
 # Data input:
 # ***********
-Y <- read.table("species.txt", header = TRUE, sep = "\t", row.names = 1)
-C <- read.table("coordinates.txt", header = TRUE, sep = "\t", row.names = 1)
+# The oribatid mite dataset will be used to illustrate the eigenvector selection procedures 
+# (see Borcard et al. 1992, 1994 for details on the data).
+data(mite)
+data(mite.xy)
+
+Y <- mite
+C <- mite.xy
 
 # If Y is multivariate: data transformation with the Hellinger transformation (more details
 # in Legendre and Gallagher 2001):
@@ -172,3 +177,5 @@ if (MEM_model != "all") {
 #    correlation. - J. Am. Stat. Assoc. 24: 99–104.
 # Griffith, D. A. and Peres-Neto, P. R. 2006. Spatial modeling in Ecology: the flexibility of 
 #    eigenfunction spatial analyses. - Ecology 87: 2603–2613.
+# Legendre, P., and Gallagher, E. D. 2001. Ecologically meaningful transformations for 
+#    ordination of species data. - Oecologia 129(2): 271-280.
