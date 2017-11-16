@@ -1,10 +1,16 @@
+# Bauman, D. et al. 2017. Disentangling good from bad practices in the selection of spatial or 
+# phylogenetic eigenvectors. – Ecography 000: 000–000.      
+# Appendix A3: Function MEM.moransel used to the perform the MIR procedures.
+
+# The function computes MEM variables based on any given listw provided by the user, and 
+# select the smallest subset of spatial eigenvectors minimising the autocorrelation (Moran's I) 
+# of the residuals of a model containing only an intercept term (no environmental variables).
+
+# 'y' is a univariate response vector; 'coord' is a matrix of spatial coordinates (cartesian);
+# listw is a spatial weighting matrix of class 'listw'.
+
 MEM.moransel <- function (y, coord, listw, MEM.autocor = c("positive", "negative", "all"), 
                           nperm = 999, alpha = 0.05) {
-  
-  # The function computes MEM based on any given listw provided by the user, and performs a
-  # MEM variable selection based on the minimization of the
-  # Moran's I of the response residuals (no environmental dataset considered here).
-  # The function is based on the Moran's I index for univariate response data.
   
   SPATIAL = "FALSE"
   # number of regions:
