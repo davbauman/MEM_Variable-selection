@@ -1,6 +1,6 @@
 ---
 title: "Guidelines of Spatial Eigenvector Selection in R"
-author: "Bauman et al. 2017"
+author: "Bauman et al. 2018"
 subtitle: "Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors. - Ecography"
 date: ""
 output: pdf_document
@@ -42,7 +42,8 @@ Y <- decostand(Y, method = "hellinger")
 
 ## I. Moran's eigenvector maps (MEM): constructing the spatial variables
 
-The MEM variables can be built from a huge variety of spatial weighting matrices (W). The W matrix is constructed by the Hadamard product of a connectivity matrix (B) defining which sites are connected and which are not, and a weighting matrix (A) either binary (no weighting) or continuous often causing connectivity to decrease with distance. The decrease can be linear, or follow a concave-down or concave-up curve (see Dray et al. 2006 for details).
+The MEM variables can be built from a huge variety of spatial weighting matrices (W). The W matrix is constructed by the Hadamard product of a connectivity matrix (B) defining which sites are connected and which are not, and a weighting matrix (A) either binary (no weighting) or continuous often causing connectivity to decrease with distance. The decrease can be linear, or follow a concave-down or concave-up curve (see Dray et al. 2006 for details), or any other
+function defined by the user.
 This R code does not provide the way to select an optimal W matrix, as this procedure still needs to be thoroughly adressed through an unbiased procedure.
 
 The function `createlistw` of the `adespatial` package offers an interactive way to create and visualize different connectivity criteria. This can help deciding which connectivity scheme is more adapted for a given study case.
@@ -102,26 +103,26 @@ MEM.select <- select$vectors
 ```
 `MEM.select` can be used to control the spatial autocorrelation of our model by adding the MEM variables to the explanatory variables of the model.
 
-#### II.1.2. Selection of the spatial predictors based on Y only (MIR approach in Bauman et al. 2017, Fig. 1, Step 3.3.). 
+#### II.1.2. Selection of the spatial predictors based on Y only (MIR approach in Bauman et al. 2018, Fig. 1, Step 3.3.). 
 The `MEM.moransel` function focuses on controling the spatial autocorrelation of Y, instead of the spatial autocorrelation of the residuals of the model relating Y to X. The function does the same as ME, but with a model that contains only an intercept term.
 
-Call the MEM.moransel.R (Appendix A3 in Bauman et al. 2017), construct the spatial predictors and select a subset of them following the MIR procedure.
+Call the MEM.moransel.R (Appendix A3 in Bauman et al. 2018), construct the spatial predictors and select a subset of them following the MIR procedure.
 ``` {r}
 source("MEM.moransel.R")
 moransel <- MEM.moransel(Y, C, listw, MEM.autocor = MEM_model, nperm = 999, alpha = 0.05)
 
 ```
-`MEM.moransel` return two dataframes containing all the spatial predictors (MEM.all) and the subset of predictors selected by the procedure (MEM.select). If no significant spatial autocorrelation could be detected in Y, then an informing message is printed.
+`MEM.moransel` returns two dataframes containing all the spatial predictors (MEM.all) and the subset of predictors selected by the procedure (MEM.select). If no significant spatial autocorrelation could be detected in Y, then an informing message is printed.
 
 ### II.2. Selecting MEM variables to describe space as accurately as possible
 If the response data is multivariate, and/or if the purpose of the spatial predictors is to capture as much spatial structure as possible in Y (i.e., maximise the spatial fit), whether it is related to a set of explanatory variables (X) or not, then the forward selection (FWD) of Blanchet et al. (2008) should be preferred.
 
-A first mandatory step before performing the FWD is to check the significance of the global model, that is, the model of Y as a function of all the spatial predictors. The FWD can only be performed if this global test is significant at a predefined alpha threshold (here, 0.05).
+A first mandatory step before performing the FWD is to check the significance of the global model, that is, the model of Y as a function of all the spatial predictors. The FWD can only be performed if this global test is significant at a predefined threshold of null hypothesis rejection (here, 0.05).
 This step was shown to control the Type I error rate that otherwise can be highly inflated (Blanchet et al. 2008).
 
-If `MEM_model = "all"` (we are interested in both positively and negatively autocorrelated patterns), then two separate global tests are performed, on the MEM displaying positive and negative eigenvalues, respectively. A p-value correction for multiple testing is then applied (Sidak correction) and the FWD is performed only if at least one of the two tests is significant.
+If `MEM_model = "all"` (we are interested in both positively and negatively autocorrelated patterns), then two separate global tests are performed, on the MEM displaying positive and negative eigenvalues, respectively. A p-value correction for multiple testing is then applied (Sidak correction) and the FWD is performed only if at least one of the two tests is significant (see Blanchet et al. 2008).
 
-The FWD with two stopping criteria consists in 1) searching the MEM variable that best explains Y (highest R² adjusted by the Ezekiel correction, 1929), then 2) to search for the next MEM best explaining the residuals of Y on the first selected MEM, etc. At each selection step, two stopping criteria are used to accept the next best MEM or stop the procedure: a) the p-value of the added MEM (as in the classical forward selection), and b) the adjusted R² of the global model (including all predictors). This second criterion was shown by Blanchet et al. to avoid model overfitting (one of the main issues of the classical forward selection).
+The FWD with two stopping criteria consists in 1) searching the MEM variable that best explains Y (highest adjusted R² adjusted by the Ezekiel correction, 1929), then 2) to search for the next MEM best explaining the residuals of Y on the first selected MEM, etc. At each selection step, two stopping criteria are used to accept the next best MEM or stop the procedure: a) the p-value of the added MEM (as in the classical forward selection), and b) the adjusted R² of the global model (including all predictors). This second criterion was shown by Blanchet et al. (2008) to avoid model overfitting (one of the main issues of the classical forward selection).
 
 Here, we consider the complete community dataframe (multivariate response):
 ```{r}
@@ -184,6 +185,8 @@ if (MEM_model != "all") {   # We consider only positively or negatively autocorr
 The MEM variables of `MEM.select` can be used as (co)variables in OLS or GLM models (univariate reponse), or in an RDA or CCA (multivariate response).
 
 ### References
+Bauman, D. et al. 2018. Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors – Ecography
+
 Blanchet, F. G. et al. 2008. Forward Selection of Explanatory Variables. - Ecology 89: 2623–2632.
 
 Borcard, D., P. Legendre and P. Drapeau. 1992. Partialling out the spatial component of ecological variation. Ecology 73: 1045-1055.

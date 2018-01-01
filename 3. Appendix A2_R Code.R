@@ -1,4 +1,4 @@
-# Bauman et al. 2017. Disentangling good from bad practices of spatial, temporal and phylogenetic
+# Bauman et al. 2018. Disentangling good from bad practices of spatial and phylogenetic
 # variable selection in eigenvector-based methods. - Ecography.
 
 # Appendix A2: R code used to compute the type I error rate, power and R² estimation accuracy 
