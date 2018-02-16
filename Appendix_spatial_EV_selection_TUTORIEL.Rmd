@@ -1,7 +1,7 @@
 ---
 title: "Guidelines of Spatial Eigenvector Selection in R"
-author: "Bauman et al. 2018"
-subtitle: "Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors. - Ecography"
+author: "Bauman et al. 2017"
+subtitle: "Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors. - Ecography 40: doi: 10.1111/ecog.03380."
 date: ""
 output: pdf_document
 ---
@@ -103,13 +103,13 @@ MEM.select <- select$vectors
 ```
 `MEM.select` can be used to control the spatial autocorrelation of our model by adding the MEM variables to the explanatory variables of the model.
 
-#### II.1.2. Selection of the spatial predictors based on Y only (MIR approach in Bauman et al. 2018, Fig. 1, Step 3.3.). 
+#### II.1.2. Selection of the spatial predictors based on Y only (MIR approach in Bauman et al. 2017, Fig. 1, Step 3.3.). 
 The `MEM.moransel` function focuses on controling the spatial autocorrelation of Y, instead of the spatial autocorrelation of the residuals of the model relating Y to X. The function does the same as ME, but with a model that contains only an intercept term.
 
-Call the MEM.moransel.R (Appendix A3 in Bauman et al. 2018), construct the spatial predictors and select a subset of them following the MIR procedure.
+Call the MEM.moransel.R (Appendix A3 in Bauman et al. 2017), construct the spatial predictors and select a subset of them following the MIR procedure.
 ``` {r}
 source("MEM.moransel.R")
-moransel <- MEM.moransel(Y, C, listw, MEM.autocor = MEM_model, nperm = 999, alpha = 0.05)
+moransel <- MEM.moransel(Y, listw, MEM.autocor = MEM_model, nperm = 999, alpha = 0.05)
 
 ```
 `MEM.moransel` returns two dataframes containing all the spatial predictors (MEM.all) and the subset of predictors selected by the procedure (MEM.select). If no significant spatial autocorrelation could be detected in Y, then an informing message is printed.
@@ -185,7 +185,7 @@ if (MEM_model != "all") {   # We consider only positively or negatively autocorr
 The MEM variables of `MEM.select` can be used as (co)variables in OLS or GLM models (univariate reponse), or in an RDA or CCA (multivariate response).
 
 ### References
-Bauman, D. et al. 2018. Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors – Ecography
+Bauman, D. et al. 2017. Disentangling good from bad practices in the selection of spatial or phylogenetic eigenvectors – Ecography 40: doi: 10.1111/ecog.03380.
 
 Blanchet, F. G. et al. 2008. Forward Selection of Explanatory Variables. - Ecology 89: 2623–2632.
 
